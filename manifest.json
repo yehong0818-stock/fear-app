@@ -1,0 +1,16 @@
+{
+  "name": "시장 체온 - 미국 증시 공포지수",
+  "short_name": "시장 체온",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D1322",
+  "theme_color": "#0D1322",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

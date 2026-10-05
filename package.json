@@ -1,0 +1,1 @@
+{"name":"fear-greed-app","version":"1.0.0","description":"미국 증시 공포탐욕 지수 데일리 앱","main":"server.js","scripts":{"start":"node server.js"},"engines":{"node":">=18"}}
