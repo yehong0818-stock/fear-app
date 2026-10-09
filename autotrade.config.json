@@ -1,0 +1,27 @@
+{
+  "mode": "dry",
+  "env": "demo",
+  "signalUrl": "http://localhost:8080/api/krxscan",
+
+  "universe": { "topByTrdval": 200, "maxCandidates": 5 },
+
+  "strategy": {
+    "buyScoreMin": 3,
+    "requireVix30": false,
+    "weights": { "goldenCross": 2, "hammer": 2, "rsiOversold": 1, "rsiWeak": 1, "topTrdval": 1 }
+  },
+
+  "risk": {
+    "maxHoldings": 5,
+    "maxBuysPerDay": 3,
+    "positionPct": 10,
+    "stopLossPct": -5,
+    "takeProfitPct": 10,
+    "dailyLossLimitPct": -3
+  },
+
+  "order": { "type": "market", "excgId": "KRX" },
+
+  "loopSeconds": 60,
+  "marketHours": { "start": "09:00", "end": "15:20" }
+}

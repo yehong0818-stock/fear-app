@@ -398,6 +398,12 @@ body{transition:background .25s ease,color .25s ease}
 .rsi-chip{border:1px solid var(--line);border-radius:10px;padding:7px 9px;background:var(--card)}
 .rsi-chip .n{font-size:11.5px;color:var(--mute)}
 .rsi-chip .p{font:700 13px var(--mono);margin-top:2px}
+.tabs{position:sticky;top:0;z-index:60;display:flex;gap:6px;overflow-x:auto;padding:8px 2px;margin:4px 0 14px;background:var(--frost);border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 15px;font:800 13.5px var(--display);cursor:pointer;white-space:nowrap}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--frost);border-color:var(--ink)}
+[data-tab]{scroll-margin-top:64px}
+@media(max-width:640px){.tabs button{padding:7px 13px;font-size:13px}}
 </style>
 </head>
 <body>
@@ -410,6 +416,14 @@ body{transition:background .25s ease,color .25s ease}
 </header>
 
 <div class="err" id="err"></div>
+<nav class="tabs" id="tabs" role="tablist" aria-label="화면 구분">
+  <button type="button" data-t="over" aria-pressed="true">개요</button>
+  <button type="button" data-t="rec">추천·신호</button>
+  <button type="button" data-t="kr">국내</button>
+  <button type="button" data-t="coin">코인</button>
+  <button type="button" data-t="quote">시세·비교</button>
+  <button type="button" data-t="corr">상관</button>
+</nav>
 
 <section class="favbar" id="favSec">
   <div class="fav-h"><b>관심종목</b><small id="favHint">카드 왼쪽 위 ☆를 누르면 여기에 고정됩니다</small>
@@ -417,13 +431,13 @@ body{transition:background .25s ease,color .25s ease}
   <div class="fav-sum" id="favSum"></div>
   <div class="fav-row" id="favRow"><span class="fc" style="cursor:default;border-style:dashed;color:var(--mute)">아직 추가한 종목이 없습니다</span></div>
 </section>
-<section class="favpanel" id="favPanel">
+<section class="favpanel" id="favPanel" data-tab="rec">
   <div class="rec-h"><b>관심종목 매수·매도 신호</b><span class="dt" id="favPanelDt"></span></div>
   <div class="fav-counts" id="favCounts"></div>
   <div class="rlist" id="favPanelList"></div>
 </section>
 
-<main class="hero skel" id="hero">
+<main class="hero skel" id="hero" data-tab="over">
   <div class="eyebrow"><span>CNN Fear &amp; Greed Index</span><span>·</span><b id="asof">불러오는 중…</b></div>
   <div class="reading">
     <div class="score" id="score">--</div>
@@ -447,7 +461,7 @@ body{transition:background .25s ease,color .25s ease}
   </dl>
 </main>
 
-<section class="sig" id="sig" data-lv="0" aria-live="polite">
+<section class="sig" id="sig" data-lv="0" aria-live="polite" data-tab="over">
   <div class="sig-top">
     <div>
       <span class="sig-badge"><i></i><span id="sigBadge">VIX 30 매수 신호 · 확인 중</span></span>
@@ -477,7 +491,7 @@ body{transition:background .25s ease,color .25s ease}
   </div>
 </section>
 
-<section>
+<section data-tab="rec">
   <h2>종목별 매수·매도 추천 <small>지표 조합 스코어 · 투자 판단은 본인 책임</small></h2>
   <div class="panel rec">
     <div class="rec-h"><b id="recSub">종목별 신호를 계산하고 있습니다</b><span class="dt" id="recDt"></span></div>
@@ -487,7 +501,7 @@ body{transition:background .25s ease,color .25s ease}
   </div>
 </section>
 
-<section id="tvSec">
+<section id="tvSec" data-tab="rec">
   <h2>거래대금 상위 매수 추천 <small id="tvSub">당일 거래대금 순 · 앱이 열려 있을 때 갱신</small></h2>
   <div class="panel">
     <div class="rec-h"><b>거래대금 순위</b>
@@ -501,7 +515,7 @@ body{transition:background .25s ease,color .25s ease}
   </div>
 </section>
 
-<section id="krxSec">
+<section id="krxSec" data-tab="kr">
   <h2>KRX 한국거래소 데이터 <small id="krxSub">한국거래소 OpenAPI · 로딩 중</small></h2>
 
   <div class="panel" style="margin-bottom:10px">
@@ -555,8 +569,8 @@ body{transition:background .25s ease,color .25s ease}
   </div>
 </section>
 
-<section>
-  <h2>비트코인 공포·탐욕 &amp; 한국 증시 <small>Alternative.me · 야후 파이낸스</small></h2>
+<section data-tab="coin">
+  <h2>비트코인 공포·탐욕 <small>Alternative.me</small></h2>
   <div class="duo">
     <div class="panel btc">
       <div><div class="lbl">현재 지수</div><div class="big" id="bval">--</div><div class="lbl" id="bcls">불러오는 중…</div></div>
@@ -567,15 +581,18 @@ body{transition:background .25s ease,color .25s ease}
       <div class="bmeta"><span id="bprice"></span><span id="byd"></span><span id="bwk"></span><span id="bmo"></span></div>
       <canvas id="btrend" aria-label="최근 31일 비트코인 공포탐욕 추이"></canvas>
     </div>
-    <div class="panel">
+</section>
+
+<section data-tab="kr">
+  <h2>한국 증시 <small>코스피·코스닥·원달러 환율 · 야후 파이낸스</small></h2>
+  <div class="panel">
       <div class="krt"><b>한국 증시</b></div>
       <div id="krRows"><div class="krrow"><b>코스피</b><span class="krv">불러오는 중…</span></div></div>
       <div class="krhi" id="krHi"></div>
-    </div>
   </div>
 </section>
 
-<section id="cmpSec">
+<section id="cmpSec" data-tab="quote">
   <h2>S&amp;P 500 vs TIGER 미국S&amp;P500 <small id="cmpSub">같은 기간 수익률 비교 · 시작 = 0%</small></h2>
   <div class="panel">
     <div class="seg" id="cmpRange">
@@ -589,7 +606,7 @@ body{transition:background .25s ease,color .25s ease}
   </div>
 </section>
 
-<section id="qsec">
+<section id="qsec" data-tab="quote">
   <h2>섹터별 시세 <small>전일 대비 · 아래 선은 최근 1개월</small></h2>
   <div class="seg sectab" id="sectab" role="tablist"></div>
   <div class="secsum" id="secsum"></div>
@@ -604,7 +621,7 @@ body{transition:background .25s ease,color .25s ease}
   <p class="note" style="border:0;margin-top:10px;padding:0">스페이스X는 비상장 기업이라 직접 시세가 없습니다. 스페이스X 지분을 보유한 상장 펀드 DXYZ(Destiny Tech100)로 간접 확인하며, 펀드 구조상 실제 가치 대비 프리미엄이 붙어 거래될 수 있습니다.</p>
 </section>
 
-<section id="corrSec">
+<section id="corrSec" data-tab="corr">
   <h2><span id="corrN">28</span>종목 상관관계 <small id="corrSub">주간 수익률 · 매주 자동 갱신</small></h2>
   <div class="corr-meta" id="corrMeta"><span class="chip">계산 중… 처음 한 번은 10초 정도 걸립니다</span></div>
   <div class="panel calert" id="calert">
@@ -632,7 +649,7 @@ body{transition:background .25s ease,color .25s ease}
   <p class="note" style="border:0;margin-top:10px;padding:0">변화 알림 기본 기준: <b>급변</b> = 51주 상관이 지난주보다 ±0.10 이상 바뀜(과거 30주 동안 상위 1% 변화), <b>단기 이탈</b> = 최근 13주 상관이 51주 상관과 ±0.50 이상 다름(상위 5%). 「기준 조절」에서 바꿀 수 있습니다. 13주 상관은 표본이 작아 흔들림이 크므로 "흐름이 바뀌는 중"이라는 신호로만 보세요.<br>한국·대만·미국 장과 24시간 거래되는 코인의 시간 차이를 줄이려고 금요일 종가 기준 주간 수익률을 씁니다. 매주 금요일 미국 장 마감 후(한국시간 토요일 아침) 최근 51주로 다시 계산합니다. 51주 표본에서는 ±0.28 이내 값은 0과 구별하기 어렵습니다.</p>
 </section>
 
-<section>
+<section data-tab="rec">
   <h2>신호 정확도 통계 <small id="acSub">과거 데이터 기준 요약</small></h2>
   <div class="panel acard">
     <div class="ac-grid" id="acGrid"></div>
@@ -644,7 +661,7 @@ body{transition:background .25s ease,color .25s ease}
   </div>
 </section>
 
-<section>
+<section data-tab="rec">
   <h2>신호 적중률 백테스트 <small id="btSub">과거 데이터로 신호 성과 확인</small></h2>
   <div class="panel bt">
     <div class="wrapx"><table id="btTable"><thead><tr><th>신호</th><th>표본(일)</th><th>평균 1주</th><th>평균 1개월</th><th>평균 3개월</th><th>1개월 플러스 확률</th></tr></thead><tbody><tr><td colspan="6">계산 중… (첫 계산에 최대 1분)</td></tr></tbody></table></div>
@@ -654,19 +671,19 @@ body{transition:background .25s ease,color .25s ease}
   </div>
 </section>
 
-<section>
+<section data-tab="over">
   <h2>추이 <span class="seg" id="range">
     <button aria-pressed="false" data-d="30">1개월</button><button aria-pressed="true" data-d="90">3개월</button><button aria-pressed="false" data-d="400">1년</button>
   </span></h2>
   <div class="panel"><canvas id="chart"></canvas><div class="tip" id="tip">차트를 눌러 날짜별 값을 확인하세요</div></div>
 </section>
 
-<section>
+<section data-tab="over">
   <h2>지수를 만드는 7가지 지표 <small>각 0–100, 낮을수록 공포</small></h2>
   <div class="parts" id="parts"></div>
 </section>
 
-<section>
+<section data-tab="over">
   <h2>VIX 변동성 지수 <small>S&amp;P 500 옵션 기반 · 높을수록 공포</small></h2>
   <div class="panel vix">
     <div><div class="lbl">현재</div><div class="big" id="vix">--</div><div class="delta" id="vixd"></div><div class="lbl" id="vixz" style="margin-top:6px"></div></div>
@@ -1662,6 +1679,26 @@ if($('gcNotify'))$('gcNotify').onclick=async()=>{
   syncGcBtn();
 };
 syncGcBtn();
+
+// ── 탭 네비게이션 ────────────────────────────
+(function(){
+  const el=document.getElementById('tabs'); if(!el) return;
+  function setTab(t){
+    if(!t)t='over';
+    document.querySelectorAll('[data-tab]').forEach(function(x){ x.style.display=(x.getAttribute('data-tab')===t)?'':'none'; });
+    el.querySelectorAll('[data-t]').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-t')===t?'true':'false'); });
+    try{ localStorage.setItem('tab',t); }catch(e){}
+    window.__tab=t;
+    try{ window.scrollTo(0,0); }catch(e){}
+    setTimeout(function(){ try{ if(typeof applyTheme==='function') applyTheme(document.documentElement.dataset.theme||'dark'); }catch(e){}
+      setTimeout(function(){ try{ window.dispatchEvent(new Event('resize')); }catch(e){} },60); },40);
+  }
+  window.setTab=setTab;
+  el.querySelectorAll('[data-t]').forEach(function(b){ b.addEventListener('click',function(){ setTab(b.getAttribute('data-t')); }); });
+  if(new URLSearchParams(location.search).get('only')) return;
+  let t='over'; try{ t=localStorage.getItem('tab')||'over'; }catch(e){}
+  setTab(t);
+})();
 </script>
 </body>
 </html>
