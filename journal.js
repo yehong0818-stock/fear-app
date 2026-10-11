@@ -46,6 +46,38 @@ function heldSince(code) {
   return since;
 }
 
+/** 실제 체결가 기록 → 백테스트 기준가와의 차이(슬리피지) 계산 */
+function attachFill(id, fill) {
+  const x = J.find(r => r.id === id); if (!x || !(fill > 0)) return null;
+  x.fill = +fill;
+  if (x.bt > 0) x.slip = +(((fill / x.bt - 1) * 100).toFixed(3));
+  save(); return x;
+}
+
+/** 전략(태그)별 백테스트 대조: 체결 슬리피지·실제 손익 vs 백테스트 기대 */
+function bench() {
+  const m = {};
+  J.forEach(x => {
+    const tag = x.tag || (x.src === 'auto' ? 'auto:기타' : '수동·기타');
+    const o = m[tag] || (m[tag] = { tag, name: x.name, trades: 0, buys: 0, sells: 0, dry: 0, real: 0, slips: [], pnls: [], wins: 0, losses: 0, realized: 0, firstTs: x.ts, lastTs: x.ts, filled: 0, noFill: 0 });
+    o.trades++; if (x.side === 'buy') o.buys++; else o.sells++;
+    if (x.dry) o.dry++; else o.real++;
+    if (x.slip != null) o.slips.push(x.slip);
+    if (x.fill != null) o.filled++; else if (x.bt != null) o.noFill++;
+    if (x.pnl != null) { o.pnls.push(x.pnlPct); o.realized += x.pnl; if (x.pnl > 0) o.wins++; else o.losses++; }
+    o.lastTs = x.ts;
+  });
+  const av = a => a.length ? +(a.reduce((x, y) => x + y, 0) / a.length).toFixed(3) : null;
+  return Object.values(m).map(o => ({ ...o, slips: o.slips.length, avgSlip: av(o.slips),
+    worstSlip: o.slips.length ? +Math.max(...o.slips).toFixed(2) : null, bestSlip: o.slips.length ? +Math.min(...o.slips).toFixed(2) : null,
+    closed: o.pnls.length, avgPnlPct: av(o.pnls), realized: +o.realized.toFixed(0),
+    winRate: (o.wins + o.losses) ? +((o.wins / (o.wins + o.losses)) * 100).toFixed(1) : null }))
+    .sort((a, b) => b.trades - a.trades);
+}
+
+/** 현재 보유분 마지막 매수의 전략 태그 */
+function holdTag(code) { let tag = '', qty = 0; J.filter(x => x.code === code).forEach(x => { if (x.side === 'buy') { qty += x.qty; tag = x.tag || ''; } else { qty -= x.qty; if (qty <= 0) { qty = 0; tag = ''; } } }); return qty > 0 ? tag : ''; }
+
 /** 매매 1건 기록 */
 function add(e) {
   const code = String(e.code || '').replace(/[^0-9A-Za-z]/g, '');
@@ -65,7 +97,7 @@ function add(e) {
     id: J.length + 1, ts: new Date().toISOString(),
     side: e.side, code, name: e.name || code, sector,
     qty, price, amount: +(qty * price).toFixed(0),
-    reason: e.reason || '', src: e.src || 'manual', env: e.env || 'demo', dry: !!e.dry, odno: e.odno || '',
+    reason: e.reason || '', src: e.src || 'manual', tag: e.tag || '', bt: e.bt != null ? e.bt : null, env: e.env || 'demo', dry: !!e.dry, odno: e.odno || '',
     prevSameCode: prevCode.length, prevSameSector: prevSector.length,
     repeat: prevCode.length > 0,
     holdQtyAfter: e.side === 'buy' ? pos.qty + qty : Math.max(0, pos.qty - qty),
@@ -167,11 +199,12 @@ function monthlyCsv() {
 function summary() { return { entries: recent(200), byCode: byCode(), bySector: bySector(), monthly: monthly(), losers: losers(2, 30), totals: totals() }; }
 
 function csv() {
-  const head = ['일시', '구분', '종목코드', '종목명', '섹터', '수량', '단가', '금액', '사유', '출처', '실현손익', '손익률%', '환경', '재매매', '이전동일종목', '이전동일섹터', '주문번호'];
-  const rows = J.map(x => [x.ts, x.side === 'buy' ? '매수' : '매도', x.code, x.name, x.sector, x.qty, x.price, x.amount,
+  const head = ['일시', '구분', '종목코드', '종목명', '전략', '수량', '단가(체결)', '백테스트 기준가', '차이%', '금액', '사유', '출처', '실현손익', '손익률%', '환경', '재매매', '주문번호'];
+  const rows = J.map(x => [x.ts, x.side === 'buy' ? '매수' : '매도', x.code, x.name, x.tag || '', x.qty, x.price,
+    x.bt != null ? x.bt : '', x.slip != null ? x.slip : '', x.amount,
     (x.reason || '').replace(/[",\n]/g, ' '), x.src, x.pnl != null ? x.pnl : '', x.pnlPct != null ? x.pnlPct : '',
-    x.env, x.repeat ? 'Y' : 'N', x.prevSameCode, x.prevSameSector, x.odno || '']);
+    x.env, x.repeat ? 'Y' : 'N', x.odno || '']);
   return '\uFEFF' + [head, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
 }
 
-module.exports = { add, summary, recent, byCode, bySector, monthly, losers, isBlocked, totals, csv, monthlyCsv, position, heldSince, _reset: () => { J = []; save(); } };
+module.exports = { add, summary, recent, byCode, bySector, monthly, losers, isBlocked, totals, csv, monthlyCsv, position, heldSince, holdTag, attachFill, bench, _reset: () => { J = []; save(); } };

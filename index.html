@@ -678,6 +678,18 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
     <div class="krx-grid" id="krbtAcc"></div>
     <p class="lbl" id="krbtNote" style="margin:8px 0 0"></p>
   </div>
+  <div class="panel" style="margin-top:10px" id="sbtPanel">
+    <div class="cpctl-row">
+      <div class="cph" style="margin:0"><b>단타 기법 추천 · 조합 백테스트</b><span class="lbl" id="sbtSub">일봉 약 21개월 · 기간을 앞·뒤 절반으로 나눠 둘 다 수익인지 검증</span></div>
+      <div class="cpbtns"><span class="seg" id="sbtUni"><button data-u="60">상위 60</button><button data-u="200" aria-pressed="true">상위 200</button></span><span class="seg" id="sbtFee"><button data-f="0">수수료 0</button><button data-f="0.3" aria-pressed="true">0.3%</button><button data-f="0.5">0.5%</button></span><button class="btn sm" id="sbtRun">계산</button></div>
+    </div>
+    <div class="sec-label" style="margin:6px 0 6px">오늘의 단타 후보 <span class="lbl" id="sbtLiveSub"></span></div>
+    <div class="krx-grid" id="sbtLive"><div class="krx-empty">불러오는 중…</div></div>
+    <canvas id="sbtChart" class="cmp-chart" style="height:220px;margin-top:10px" aria-label="단타 기법 누적 수익률"></canvas>
+    <div class="cmp-legend" id="sbtLegend"></div>
+    <div class="cbtwrap"><table class="cbt" id="sbtTable"><thead><tr><th>기법 · 조합</th><th>검증</th><th>누적 수익</th><th>앞 절반</th><th>뒤 절반</th><th>샤프</th><th>최대 낙폭</th><th>승률</th><th>거래당 평균</th><th>거래 수</th></tr></thead><tbody><tr><td colspan="10" class="lbl">이 탭을 열면 계산합니다 (처음 1회 약 20초)</td></tr></tbody></table></div>
+    <p class="lbl" id="sbtNote" style="margin:8px 0 0"></p>
+  </div>
   <div class="panel" style="margin-top:10px" id="ibtPanel">
     <div class="cpctl-row">
       <div class="cph" style="margin:0"><b>당일 매매 장중 백테스트 (5분봉)</b><span class="lbl" id="ibtSub">최근 약 60거래일 · 09:05 시가 진입 · 장 마감 전 청산</span></div>
@@ -879,7 +891,10 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
       <label>일일 매수 한도<input id="kisMaxB" type="number" step="1" value="3"></label>
       <label>손절%<input id="kisSL" type="number" step="1" value="-5"></label>
       <label>익절% (0=없음)<input id="kisTP" type="number" step="1" value="10"></label>
-      <label>매매 방식<select id="kisMode"><option value="swing">스윙(기존)</option><option value="short">단기(1~5거래일)</option><option value="day">당일(장 마감 전 청산)</option></select></label>
+      <label>매매 방식<select id="kisMode"><option value="swing">스윙(기존)</option><option value="short">단기(1~5거래일)</option><option value="day">당일(장 마감 전 청산)</option><option value="combo">단타 조합(검증 통과 기법)</option></select></label>
+      <label class="kis-combo">단타 조합<select id="kisCombo"><option value="r2m">RSI2 눌림목 + 코스피 필터 (추천)</option><option value="h">RSI2(필터) + IBS 저점 반등</option><option value="r2">RSI2 눌림목 (필터 없음)</option></select></label>
+      <label class="kis-combo">종가 매매 시작<input id="kisComboFrom" type="time" value="15:10"></label>
+      <label class="kis-combo">종가 매매 마감<input id="kisComboTo" type="time" value="15:18"></label>
       <label>매수 신호<select id="kisSignal"><option value="score">점수 합산</option><option value="trend">추세·모멘텀 상위</option></select></label>
       <label>장세 필터(신규 매수)<select id="kisRegime"><option value="off">끔</option><option value="basic">코스피 20일선 위</option><option value="strong">20일선 위 + 상승</option></select></label>
       <label>보유 기간(거래일, 0=제한 없음)<input id="kisHoldDays" type="number" step="1" min="0" max="60" value="0"></label>
@@ -916,6 +931,9 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
     <div class="kq-res" id="jnByCode"></div>
     <div class="sec-label" style="margin:12px 0 6px">섹터별 이력</div>
     <div class="kq-res" id="jnBySector"></div>
+    <div class="sec-label" style="margin:12px 0 6px">백테스트 대조 · 실제 체결가 vs 백테스트 기준가(종가) <button class="btn sm" id="jnBenchRun" style="margin-left:6px">새로고침</button></div>
+    <div class="cbtwrap"><table class="cbt" id="jnBench"><thead><tr><th>전략</th><th>주문 수</th><th>체결가 기록</th><th>평균 차이</th><th>최대 차이</th><th>청산 건수</th><th>실제 거래당 평균</th><th>백테스트 거래당 평균</th><th>차이</th><th>실현손익</th><th>승률</th></tr></thead><tbody><tr><td colspan="11" class="lbl">매매일지를 불러오면 계산합니다</td></tr></tbody></table></div>
+    <p class="lbl" id="jnBenchNote" style="margin:6px 0 0"></p>
     <div class="sec-label" style="margin:12px 0 6px">월별 손익 리포트 <button class="btn sm" id="jnCsvMonthly" style="margin-left:6px">월간 CSV</button></div>
     <div class="kq-res" id="jnMonthly"></div>
     <div class="sec-label" style="margin:12px 0 6px">손실 반복 종목 <span style="font-weight:700;color:var(--mute)">(매도 2회 이상 &amp; 누적 손실 · 자동매매 제외 대상)</span></div>
@@ -1959,8 +1977,8 @@ setInterval(tvDailyCheck,5*60*1000);
 
 // ── 섹션 격리 캡처 지원(sym/tv) ─────────────
 (()=>{const ov=new URLSearchParams(location.search).get('only');
-const keep={sym:'symBar',tv:'tvSec',krx:'krxSec',ibt:'ibtPanel'}[ov]
-if(keep==='ibtPanel'){ document.querySelectorAll('body>main,body>section,.favbar,header,.topbar').forEach(e=>{ if(!e.querySelector('#ibtPanel')) e.style.display='none'; else { e.style.display=''; Array.from(e.children).forEach(c=>{ if(c.id!=='ibtPanel') c.style.display='none'; }); } }); }
+const keep={sym:'symBar',tv:'tvSec',krx:'krxSec',ibt:'ibtPanel',sbt:'sbtPanel'}[ov]
+if(keep==='ibtPanel'||keep==='sbtPanel'){ document.querySelectorAll('body>main,body>section,.favbar,header,.topbar').forEach(e=>{ if(!e.querySelector('#'+keep)) e.style.display='none'; else { e.style.display=''; Array.from(e.children).forEach(c=>{ if(c.id!==keep) c.style.display='none'; }); } }); }
 else if(keep){document.querySelectorAll('section').forEach(sec=>{if(!(sec.id===keep||sec.querySelector('#'+keep)))sec.style.display='none'});
 document.querySelectorAll('header,.hero,h1,.topbar').forEach(e=>{try{e.style.display='none'}catch(_){}});try{window.scrollTo(0,0);document.body.style.paddingTop='0'}catch(_){}}})();
 
@@ -2155,6 +2173,7 @@ async function loadKis(){
     if($('kisVix'))$('kisVix').checked=!!A.requireVix30;
     if($('kisMode'))$('kisMode').value=A.mode||'swing'; if($('kisSignal'))$('kisSignal').value=A.signal||'score'; if($('kisRegime'))$('kisRegime').value=A.regime||'off'; if($('kisHoldDays'))$('kisHoldDays').value=A.holdDays||0;
     if($('kisRsiBuy'))$('kisRsiBuy').checked=!!A.rsiBuy; if($('kisRsiMax'))$('kisRsiMax').value=A.rsiMax||30;
+    if($('kisCombo'))$('kisCombo').value=A.combo||'r2m'; if($('kisComboFrom'))$('kisComboFrom').value=A.comboFrom||'15:10'; if($('kisComboTo'))$('kisComboTo').value=A.comboTo||'15:18';
     if($('kisDayFrom'))$('kisDayFrom').value=A.dayEntryFrom||'09:05'; if($('kisDayTo'))$('kisDayTo').value=A.dayEntryTo||'14:30'; if($('kisDayExit'))$('kisDayExit').value=A.dayExitAt||'15:15';
     kisModeUI();
     if($('kisSkipLosers'))$('kisSkipLosers').checked=!!A.skipLosers;
@@ -2162,7 +2181,7 @@ async function loadKis(){
     if($('kisLoserDays'))$('kisLoserDays').value=(A.loserBlockDays==null?30:A.loserBlockDays);
     const b=$('kisAuto'); if(b){ b.setAttribute('aria-pressed',A.on?'true':'false'); b.textContent=A.on?'자동매매 끄기':'자동매매 켜기'; }
     if($('kisAutoSub'))$('kisAutoSub').textContent=A.on?`작동 중 · ${A.loopSeconds}s 주기`:'꺼짐';
-    if(st.hasPin && st.configured){ await kisBalance(); await kisLog(); await loadJournal(); }
+    if(st.hasPin && st.configured){ await kisBalance(); await kisLog(); await loadJournal(); if(typeof loadBench==='function') await loadBench(); }
     else if($('kisBal')){ $('kisBal').innerHTML='<div class="krx-empty">KIS 설정과 PIN을 저장하면 계좌가 표시됩니다.</div>'; if($('kisHold'))$('kisHold').innerHTML=''; }
   }catch(e){ kisMsg('kisMsg','상태를 불러오지 못했습니다.',false); }
 }
@@ -2200,14 +2219,16 @@ async function kisOrder(side){
   loadKis();
 }
 // 매매 방식 프리셋(방식을 바꾸면 손절·익절·보유 기간을 기본값으로 채움 — 저장 전 수정 가능)
-var KIS_MODE_PRESET={swing:{sl:-5,tp:10,hd:0,sg:'score'},short:{sl:-3,tp:4,hd:3,sg:'trend'},day:{sl:-1.5,tp:2,hd:0,sg:'trend'}};
+var KIS_MODE_PRESET={swing:{sl:-5,tp:10,hd:0,sg:'score'},short:{sl:-3,tp:4,hd:3,sg:'trend'},day:{sl:-1.5,tp:2,hd:0,sg:'trend'},combo:{sl:0,tp:0,hd:0,sg:'score'}};
 function kisRsiOk(){ return ($('kisMode')&&$('kisMode').value)==='swing' && +$('kisHoldDays').value>=10 && +$('kisHoldDays').value<=20; }
 function kisModeUI(){ if(!$('kisMode'))return; var m=$('kisMode').value, ok=kisRsiOk();
   document.querySelectorAll('.kis-day').forEach(function(e){ e.style.display=m==='day'?'':'none'; });
-  if($('kisHoldDays')){ $('kisHoldDays').disabled=m==='day'; }
+  document.querySelectorAll('.kis-combo').forEach(function(e){ e.style.display=m==='combo'?'':'none'; });
+  if($('kisHoldDays')){ $('kisHoldDays').disabled=m==='day'||m==='combo'; } if($('kisSignal')) $('kisSignal').disabled=m==='combo';
   if($('kisRsiBuy')){ $('kisRsiBuy').disabled=!ok; } if($('kisRsiState')) $('kisRsiState').textContent=ok?'(사용 가능)':'(스윙 + 보유 10~20일일 때만)';
   var t={swing:'스윙: 손절·익절로 청산하고, 보유 기간을 넣으면 그 거래일이 지나면 정리합니다. RSI 과매도 매수는 보유 10~20거래일일 때만 켜집니다(백테스트에서 5일 이하 보유는 우위 없음).',
     short:'단기: 기본 신호는 <b>추세·모멘텀 상위</b>이고, 보유 기간(기본 3거래일)이 지나면 손익과 관계없이 매도합니다. 백테스트(상위 200, 수수료 0.3%, 3일 보유): 추세·모멘텀 상위 10 <b>+441%</b>(전체 평균 +280%, 점수 상위 10 +102%) — 단 최대 낙폭 −53.6%로 매우 큽니다. 장세 필터(코스피 20일선 위일 때만 신규 매수)를 켜면 낙폭은 −38.4%로 줄지만 누적 수익도 +156%로 줄어 전체 평균보다 낮아집니다.',
+    combo:'단타 조합: 매일 <b>종가 매매 시간(기본 15:10~15:18)에 1회</b> 청산과 신규 매수를 처리합니다. RSI2 눌림목은 종가가 5일선 위로 오르거나 5거래일이 지나면, IBS 저점 반등은 다음 거래일에 매도합니다. 앱이 이 방식으로 산 종목만 청산하고, 손절은 설정한 경우(0=없음)에만 장중 확인합니다. 백테스트(약 21개월, 상위 200, 수수료 0.3%): RSI2+코스피 필터 <b>+213.5%·최대 낙폭 −19.3%</b>, 조합 H +210.3%·−25.6% (코스피 +166.3%·−38.6%). 실제 체결은 15:20 종가 동시호가 전이라 백테스트 종가와 다를 수 있습니다.',
     day:'당일: 기본 신호는 추세·모멘텀 상위이고, 정해진 시간에만 새로 사고 청산 시각에 앱으로 산 종목을 전량 매도합니다. <b>5분봉 장중 백테스트(최근 약 60거래일, 수수료 0.3%)에서 손절 −1.5%·익절 +2%는 모든 전략이 손실</b>이었고, 손절·익절 값이나 종목 수를 바꾸면 결과가 손실과 수익을 오갔습니다. 아래 국내 탭의 「당일 매매 장중 백테스트」를 확인하고 DRY-RUN·모의투자로만 써 보세요.'}[m];
   if($('kisModeNote'))$('kisModeNote').innerHTML='⚠ '+t+' 자동매매 판단은 1분 주기라 청산 시각에서 최대 1분 늦을 수 있습니다. 투자 권유가 아닙니다.'; }
 if($('kisMode'))$('kisMode').onchange=function(){ var p=KIS_MODE_PRESET[$('kisMode').value]; if(p){ $('kisSL').value=p.sl; $('kisTP').value=p.tp; $('kisHoldDays').value=p.hd; if($('kisSignal'))$('kisSignal').value=p.sg; } kisModeUI(); };
@@ -2219,7 +2240,7 @@ if($('kisSwingPreset'))$('kisSwingPreset').onclick=function(){
   kisModeUI(); kisExpo(); kisMsg('kisMsg','추천값을 채웠습니다(아직 저장 안 됨): 스윙 · 추세·모멘텀 상위 · 보유 20거래일 · 손절 −5% · 익절 없음(0) · 종목당 10% × 5종목 = 투자 비중 50%. 백테스트(상위 200, 수수료 0.3%): 누적 +84.1%, 최대 낙폭 −8.2%. 확인 후 「자동매매 설정 저장」을 누르세요.',true); };
 setTimeout(kisModeUI,0);
 if($('kisSaveAuto'))$('kisSaveAuto').onclick=async()=>{
-  const q='mode='+$('kisMode').value+'&signal='+$('kisSignal').value+'&regime='+$('kisRegime').value+'&holdDays='+$('kisHoldDays').value+'&rsiBuy='+($('kisRsiBuy').checked&&kisRsiOk()?'1':'0')+'&rsiMax='+$('kisRsiMax').value+'&dayEntryFrom='+$('kisDayFrom').value+'&dayEntryTo='+$('kisDayTo').value+'&dayExitAt='+$('kisDayExit').value+'&buyScoreMin='+$('kisScore').value+'&positionPct='+$('kisPos').value+'&maxHoldings='+$('kisMaxH').value+'&maxBuysPerDay='+$('kisMaxB').value+'&stopLossPct='+$('kisSL').value+'&takeProfitPct='+$('kisTP').value+'&requireVix30='+($('kisVix').checked?'1':'0')+'&skipLosers='+($('kisSkipLosers').checked?'1':'0')+'&loserMinSells='+$('kisLoserMin').value+'&loserBlockDays='+$('kisLoserDays').value;
+  const q='mode='+$('kisMode').value+'&combo='+$('kisCombo').value+'&comboFrom='+$('kisComboFrom').value+'&comboTo='+$('kisComboTo').value+'&signal='+$('kisSignal').value+'&regime='+$('kisRegime').value+'&holdDays='+$('kisHoldDays').value+'&rsiBuy='+($('kisRsiBuy').checked&&kisRsiOk()?'1':'0')+'&rsiMax='+$('kisRsiMax').value+'&dayEntryFrom='+$('kisDayFrom').value+'&dayEntryTo='+$('kisDayTo').value+'&dayExitAt='+$('kisDayExit').value+'&buyScoreMin='+$('kisScore').value+'&positionPct='+$('kisPos').value+'&maxHoldings='+$('kisMaxH').value+'&maxBuysPerDay='+$('kisMaxB').value+'&stopLossPct='+$('kisSL').value+'&takeProfitPct='+$('kisTP').value+'&requireVix30='+($('kisVix').checked?'1':'0')+'&skipLosers='+($('kisSkipLosers').checked?'1':'0')+'&loserMinSells='+$('kisLoserMin').value+'&loserBlockDays='+$('kisLoserDays').value;
   const j=await kisFetch('/api/kis/auto?'+q); kisMsg('kisMsg', j.ok?('자동매매 설정을 저장했습니다.'+(j.warn?' '+j.warn:'')):(j.msg||'실패'), j.ok); loadKis();
 };
 if($('kisAuto'))$('kisAuto').onclick=async()=>{
@@ -2334,6 +2355,20 @@ function jnTotals(j){ if($('jnTot'))$('jnTot').innerHTML=
   '<div class="krx-tile"><b>실현손익</b><span class="v" style="color:'+(j.realized>=0?css('--hot'):css('--cold'))+'">'+(j.realized>=0?'+':'')+Number(j.realized).toLocaleString('ko-KR')+'</span></div>'+
   '<div class="krx-tile"><b>승률</b><span class="v">'+(j.winRate==null?'--':j.winRate+'%')+'</span> <small style="color:var(--mute)">'+j.wins+'승 '+j.losses+'패</small></div>';
 }
+// ── 백테스트 대조(실제 체결가 vs 백테스트 기준가) ──
+var JNB={data:null};
+var BT_NAME={r2m:'RSI2 눌림목 + 코스피 20일선 위',r2:'RSI2 눌림목 (60일선 위, 1~5일)',ibs:'IBS 종가 저점 반등 (60일선 위, 종가→다음 날 종가)'};
+function btAvg(tag){ if(typeof SBT==='undefined'||!SBT.data) return null; var nm=BT_NAME[tag]; if(!nm) return null;
+  var r=(SBT.data.techs||[]).concat(SBT.data.combos||[]).filter(function(x){return x.name===nm;})[0]; return r?r.avgTrade:null; }
+async function loadBench(){ var j=await kisFetch('/api/kis/bench'); if(!j.ok) return; JNB.data=j.rows; jnbPaint(); }
+function jnbPaint(){ var box=document.querySelector('#jnBench tbody'); if(!box) return; var R=JNB.data||[];
+  var f=function(v,dg){ return v==null?'--':'<span class="'+(v>=0?'up':'dn')+'">'+(v>=0?'+':'')+v.toFixed(dg==null?2:dg)+'%</span>'; };
+  if(!R.length){ box.innerHTML='<tr><td colspan="11" class="lbl">아직 주문 기록이 없습니다. 모의투자나 DRY-RUN을 돌리면 여기에 쌓입니다.</td></tr>'; if($('jnBenchNote'))$('jnBenchNote').textContent=''; return; }
+  box.innerHTML=R.map(function(r){ var bt=btAvg(r.tag), d=(r.avgPnlPct!=null&&bt!=null)?+(r.avgPnlPct-bt).toFixed(3):null;
+    return '<tr><td>'+cpEsc(r.tag)+(BT_NAME[r.tag]?' <span class="lbl">단타 조합</span>':'')+'</td><td>'+r.trades+'</td><td>'+r.filled+(r.noFill?' <span class="lbl">미기록 '+r.noFill+'</span>':'')+'</td><td>'+(r.avgSlip==null?'--':f(r.avgSlip,2))+'</td><td>'+(r.worstSlip==null?'--':f(r.worstSlip,2))+'</td><td>'+r.closed+'</td><td>'+(r.avgPnlPct==null?'--':f(r.avgPnlPct,2))+'</td><td>'+(bt==null?'--':f(bt,2))+'</td><td>'+(d==null?'--':f(d,2))+'</td><td>'+(r.realized>=0?'<span class="up">+'+r.realized.toLocaleString()+'</span>':'<span class="dn">'+r.realized.toLocaleString()+'</span>')+'</td><td>'+(r.winRate==null?'--':r.winRate+'%')+'</td></tr>'; }).join('');
+  if($('jnBenchNote'))$('jnBenchNote').innerHTML='「평균 차이」 = 실제 체결가가 백테스트 기준가(종가)보다 평균 몇 % 높거나 낮았는지입니다. <b>+면 백테스트보다 비싸게 샀다</b>는 뜻이고, 그만큼 실제 성과가 백테스트보다 나빠집니다. 매수는 잔고의 매입평균가, 매도는 증권사 체결내역에서 읽습니다(조회 실패 시 「미기록」). 「백테스트 거래당 평균」은 국내 탭의 <b>단타 기법 추천·조합 백테스트</b>를 먼저 계산하면 채워집니다. DRY-RUN은 실제 체결이 없어 차이를 기록하지 않습니다.'; }
+if($('jnBenchRun'))$('jnBenchRun').onclick=loadBench;
+setTimeout(function(){ if(typeof loadBench==='function'&&$('jnBench')) loadBench(); },1500);
 async function loadJournal(){
   const j=await kisFetch('/api/kis/journal');
   if(!j.ok){ if($('jnList'))$('jnList').innerHTML='<div class="tv-row"><span class="tv-rank">–</span><span class="tv-name">'+(j.msg||'일지를 불러오지 못했습니다')+'</span><span class="tv-val">--</span></div>'; return; }
@@ -2466,6 +2501,41 @@ document.addEventListener('click',function(e){
   var ub=e.target.closest&&e.target.closest('#krbtUni button'); if(ub){ KRBT.uni=+ub.dataset.u; document.querySelectorAll('#krbtUni button').forEach(function(x){x.setAttribute('aria-pressed',x===ub);}); krbtRun(); return; }
   var hb=e.target.closest&&e.target.closest('#krbtHold button'); if(hb){ KRBT.hold=+hb.dataset.h; document.querySelectorAll('#krbtHold button').forEach(function(x){x.setAttribute('aria-pressed',x===hb);}); krbtRun(); }
 });
+// ── 단타 기법 추천 · 조합 백테스트 ─────────────
+var SBT={uni:200,fee:0.3,data:null,busy:false,started:false};
+function sbtRun(){ if(SBT.busy) return; SBT.busy=true; SBT.started=true; var b=document.getElementById('sbtRun'); if(b){ b.disabled=true; b.textContent='계산 중…'; }
+  var tb=document.querySelector('#sbtTable tbody'); if(tb&&!SBT.data) tb.innerHTML='<tr><td colspan="10" class="lbl">2년치 일봉을 받아 계산하는 중… (처음 1회 약 20초)</td></tr>';
+  fetch('/api/shortbt?n='+SBT.uni+'&k=5&fee='+SBT.fee).then(function(r){return r.json();}).then(function(d){ if(d.error) throw new Error(d.error); SBT.data=d; sbtPaint(); })
+  .catch(function(e){ if(tb) tb.innerHTML='<tr><td colspan="10" class="lbl">실패: '+cpEsc(e&&e.message||e)+'</td></tr>'; })
+  .finally(function(){ SBT.busy=false; if(b){ b.disabled=false; b.textContent='계산'; } });
+  fetch('/api/shortlive?n='+SBT.uni).then(function(r){return r.json();}).then(sbtLive).catch(function(){ var e=document.getElementById('sbtLive'); if(e) e.innerHTML='<div class="krx-empty">후보를 불러오지 못했습니다.</div>'; }); }
+function sbtLive(d){ var box=document.getElementById('sbtLive'); if(!box) return; if(!d||d.error){ box.innerHTML='<div class="krx-empty">'+cpEsc((d&&d.error)||'후보 없음')+'</div>'; return; }
+  document.getElementById('sbtLiveSub').textContent=d.basis+' 기준 · 코스피 '+d.kospi.last.toLocaleString()+' / 20일선 '+(d.kospi.ma20||0).toLocaleString()+(d.kospi.above20?' (위)':' (아래)');
+  var chips=function(a,f){ return a.length?a.slice(0,6).map(function(x){ return '<span class="rsi-chip" style="display:inline-block;margin:2px"><span class="n">'+cpEsc(x.name)+'</span> <span class="p">'+f(x)+'</span></span>'; }).join(''):'<span class="lbl">해당 없음</span>'; };
+  var card=function(t,sub,body,warn){ return '<div class="krx-cell" style="padding:10px;border:1.5px solid var(--line);border-radius:10px"><b>'+t+'</b><div class="lbl" style="margin:2px 0 6px">'+sub+'</div>'+(warn?'<div class="lbl" style="color:var(--hot);margin-bottom:4px">'+warn+'</div>':'')+body+'</div>'; };
+  box.innerHTML=card('① RSI2 눌림목 (추천)','60일선 위 + RSI(2)&lt;10 · 종가 매수 → 5일선 회복 또는 5일 후 매도',chips(d.r2,function(x){return 'RSI2 '+x.rsi2;}),d.r2Blocked?'코스피가 20일선 아래 → 코스피 필터 사용 시 오늘은 매수하지 않음':'')
+    +card('② IBS 저점 반등','60일선 위 + 저가 근처 하락 마감(IBS&lt;0.15) · 종가 매수 → 다음 날 종가 매도',chips(d.ibs,function(x){return 'IBS '+x.ibs;}))
+    +card('③ 오버나이트 과매도','60일선 위 + RSI(14)&lt;30 · 종가 매수 → 다음 날 시가 매도',chips(d.on,function(x){return 'RSI '+x.rsi14;}),'수수료 0.3% 적용 시 검증 미통과 — 참고용'); }
+function sbtPaint(){ var d=SBT.data; if(!d) return; var R=d.techs.concat(d.combos), cols=cbtCols();
+  var f=function(v,dg){ return v==null?'--':'<span class="'+(v>=0?'up':'dn')+'">'+(v>=0?'+':'')+v.toFixed(dg==null?1:dg)+'%</span>'; };
+  document.getElementById('sbtSub').textContent=d.from+' ~ '+d.to+' (앞 절반 ~'+d.mid+') · 거래대금 상위 '+d.universe+' 중 '+d.stocks+'종목 · 기법당 최대 '+d.k+'종목 · 수수료 왕복 '+d.fee+'%';
+  var rob=R.filter(function(r){return r.robust;}), best=rob.reduce(function(a,r){ return (r.total/Math.max(1,-r.mdd))>(a?a.total/Math.max(1,-a.mdd):-1e9)?r:a; },null);
+  document.querySelector('#sbtTable tbody').innerHTML=R.map(function(r,i){ return '<tr class="'+(r===best?'best':'')+'"><td><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+cols[i%cols.length]+';margin-right:6px"></i>'+cpEsc(r.name)+(r===best?' 🏆':'')+'</td><td>'+(r.robust?'<span class="up">통과</span>':'<span class="dn">미통과</span>')+'</td><td>'+f(r.total)+'</td><td>'+f(r.first.total)+'</td><td>'+f(r.second.total)+'</td><td>'+(r.sharpe==null?'--':r.sharpe.toFixed(2))+'</td><td><span class="dn">'+r.mdd.toFixed(1)+'%</span></td><td>'+(r.win==null?'--':r.win+'%')+'</td><td>'+f(r.avgTrade,2)+'</td><td>'+r.trades.toLocaleString()+'</td></tr>'; }).join('')
+    +'<tr><td>비교: 코스피 지수 보유</td><td></td><td>'+f(d.kospi.total)+'</td><td></td><td></td><td></td><td><span class="dn">'+d.kospi.mdd.toFixed(1)+'%</span></td><td></td><td></td><td></td></tr>';
+  document.getElementById('sbtNote').innerHTML='🏆 = 검증 통과 중 「누적 ÷ 최대 낙폭」 최고. 자동매매(실시간 계좌 탭)의 <b>매매 방식 → 단타 조합</b>에서 검증 통과 기법을 고를 수 있습니다. 변동성 돌파·갭 반등처럼 하루 안에 사고파는 기법은 수수료를 넣으면 모두 손실이라 자동매매 옵션에서 뺐습니다.<br>⚠ '+cpEsc(d.note)+' 과거 성과는 미래 수익을 보장하지 않으며 투자 권유가 아닙니다.';
+  var cv=document.getElementById('sbtChart'); if(!cv) return; var st=setup(cv), x=st[0], w=st[1], h=st[2], L=50,Rr=8,T=10,B=22, cw=w-L-Rr, ch=h-T-B;
+  var show=R.filter(function(r){return r.robust;}).concat([{name:'코스피',curve:d.kospi.curve,k:1}]);
+  var all=[].concat.apply([],show.map(function(r){return r.curve;})), mn=Math.min.apply(null,all.concat([0])), mx=Math.max.apply(null,all.concat([0])), pad=Math.max(2,(mx-mn)*.08); mn-=pad; mx+=pad;
+  var n=d.kospi.curve.length, X=function(i){return L+(n<2?0:i/(n-1)*cw);}, Y=function(v){return T+ch-(v-mn)/((mx-mn)||1)*ch;};
+  x.font='500 10px IBM Plex Mono'; x.strokeStyle=css('--line'); x.lineWidth=1;
+  for(var k=0;k<=4;k++){ var v=mn+(mx-mn)*k/4, y=Y(v); x.beginPath(); x.moveTo(L,y); x.lineTo(L+cw,y); x.stroke(); x.fillStyle=css('--mute'); x.textAlign='right'; x.fillText((v>=0?'+':'')+v.toFixed(0)+'%',L-6,y+3); }
+  show.forEach(function(r){ var i=R.indexOf(r); x.strokeStyle=r.k?css('--ink'):cols[i%cols.length]; x.lineWidth=r===best?2.6:1.4; x.setLineDash(r.k?[1,3]:[]); x.beginPath(); r.curve.forEach(function(v,j){ if(j===0) x.moveTo(X(j),Y(v)); else x.lineTo(X(j),Y(v)); }); x.stroke(); x.setLineDash([]); });
+  x.fillStyle=css('--mute'); x.textAlign='left'; x.fillText(d.from.slice(2).replace(/-/g,'/'),L,h-6); x.textAlign='right'; x.fillText(d.to.slice(2).replace(/-/g,'/'),L+cw,h-6);
+  document.getElementById('sbtLegend').innerHTML=show.map(function(r){ var i=R.indexOf(r); return '<span><i style="background:'+(r.k?css('--ink'):cols[i%cols.length])+'"></i>'+cpEsc(r.name)+'</span>'; }).join('')+'<span class="lbl">(검증 통과만 표시)</span>'; }
+document.addEventListener('click',function(e){ var t=e.target; if(t.id==='sbtRun'){ sbtRun(); return; }
+  var seg=function(id,fn){ var b=t.closest&&t.closest('#'+id+' button'); if(!b) return false; document.querySelectorAll('#'+id+' button').forEach(function(x){x.setAttribute('aria-pressed',x===b);}); fn(b); sbtRun(); return true; };
+  seg('sbtUni',function(b){SBT.uni=+b.dataset.u;})||seg('sbtFee',function(b){SBT.fee=+b.dataset.f;}); });
+(function(){ var q=new URLSearchParams(location.search); if(q.get('tab')==='kr'||q.get('sbt')) setTimeout(function(){ if(!SBT.started) sbtRun(); },700); })();
 // ── 당일 매매 장중 백테스트 ─────────────
 var IBT={uni:60,sl:-1.5,tp:2,fee:0.3,data:null,busy:false};
 function ibtRun(){ if(IBT.busy) return; IBT.busy=true; var b=document.getElementById('ibtRun'); if(b){ b.disabled=true; b.textContent='계산 중…'; }
@@ -2494,7 +2564,7 @@ document.addEventListener('click',function(e){ var t=e.target; if(t.id==='ibtRun
   var seg=function(id,fn){ var b=t.closest&&t.closest('#'+id+' button'); if(!b) return false; document.querySelectorAll('#'+id+' button').forEach(function(x){x.setAttribute('aria-pressed',x===b);}); fn(b); ibtRun(); return true; };
   seg('ibtUni',function(b){IBT.uni=+b.dataset.u;})||seg('ibtSLTP',function(b){var a=b.dataset.s.split(',');IBT.sl=+a[0];IBT.tp=+a[1];})||seg('ibtFee',function(b){IBT.fee=+b.dataset.f;}); });
 (function(){ var q=new URLSearchParams(location.search); if(q.get('ibt')){ if(q.get('ibtn')==='200'){ IBT.uni=200; document.querySelectorAll('#ibtUni button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.u==='200');}); } setTimeout(ibtRun,800); } })();
-(function(){ var prev=window.onTabShown; window.onTabShown=function(t){ try{ if(prev) prev(t); }catch(e){} if(t==='kr'&&!KRBT.started) setTimeout(krbtRun,300); if(t==='kr'&&KRBT.data) setTimeout(krbtPaint,50); if(t==='kr'&&IBT.data) setTimeout(ibtPaint,50); }; try{ var q=new URLSearchParams(location.search); if(q.get('krh')){ KRBT.hold=+q.get('krh'); document.querySelectorAll('#krbtHold button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.h===q.get('krh'));}); } if(q.get('krn')==='200'){ KRBT.uni=200; document.querySelectorAll('#krbtUni button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.u==='200');}); } var ks=document.getElementById('krbtPanel'); var vis=ks&&ks.closest('section')&&ks.closest('section').style.display!=='none'; if(q.get('krbt')||q.get('tab')==='kr'||vis) setTimeout(function(){ if(!KRBT.started) krbtRun(); },600); }catch(e){} })();
+(function(){ var prev=window.onTabShown; window.onTabShown=function(t){ try{ if(prev) prev(t); }catch(e){} if(t==='kr'&&!KRBT.started) setTimeout(krbtRun,300); if(t==='kr'&&KRBT.data) setTimeout(krbtPaint,50); if(t==='kr'&&IBT.data) setTimeout(ibtPaint,50); if(t==='kr'&&!SBT.started) setTimeout(sbtRun,400); if(t==='kr'&&SBT.data) setTimeout(sbtPaint,50); }; try{ var q=new URLSearchParams(location.search); if(q.get('krh')){ KRBT.hold=+q.get('krh'); document.querySelectorAll('#krbtHold button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.h===q.get('krh'));}); } if(q.get('krn')==='200'){ KRBT.uni=200; document.querySelectorAll('#krbtUni button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.u==='200');}); } var ks=document.getElementById('krbtPanel'); var vis=ks&&ks.closest('section')&&ks.closest('section').style.display!=='none'; if(q.get('krbt')||q.get('tab')==='kr'||vis) setTimeout(function(){ if(!KRBT.started) krbtRun(); },600); }catch(e){} })();
 </script>
 </body>
 </html>

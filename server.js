@@ -9,6 +9,7 @@ const COINS = require('./coins.js');
 const COINBT = require('./coinbt.js');
 const KRBT = require('./krbt.js');
 const INTRA = require('./intrabt.js');
+const SHORT = require('./shortbt.js');
 const PORT = process.env.PORT || 8080;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 const CACHE_MS = 5 * 60 * 1000;
@@ -842,6 +843,19 @@ http.createServer(async (req, res) => {
       }, 15 * 60e3).catch(() => ({ ok: false }));
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify(r));
+    }
+    if (url === '/api/shortbt' || url === '/api/shortlive') {
+      const g = k => (req.url.match(new RegExp('[?&]' + k + '=(-?[\\d.]+)')) || [])[1];
+      const ds = await cached('krxstocks', getKrxStocks, 3600e3).catch(() => ({}));
+      const N = g('n') === '60' ? 60 : 200;
+      const uni = (ds.list || []).filter(x => x.trdval && /KOSPI|KOSDAQ/.test(x.market) && !/스팩|SPAC|우$|우B$|리츠/.test(x.name))
+        .sort((a, b) => b.trdval - a.trdval).slice(0, N).map(x => ({ sym: x.code + (x.market === 'KOSDAQ' ? '.KQ' : '.KS'), name: x.name }));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      if (!uni.length) return res.end(JSON.stringify({ error: 'KRX 종목 목록을 불러오지 못했습니다' }));
+      try {
+        const data = url === '/api/shortbt' ? await SHORT.backtest(uni, { k: g('k'), fee: g('fee') }) : await SHORT.liveSignals(uni, g('fresh') === '1');
+        return res.end(JSON.stringify(data));
+      } catch (e) { return res.end(JSON.stringify({ error: String(e && e.message || e) })); }
     }
     if (url === '/api/intrabt') {
       const g = k => (req.url.match(new RegExp('[?&]' + k + '=(-?[\\d.]+)')) || [])[1];
