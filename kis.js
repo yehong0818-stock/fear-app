@@ -10,6 +10,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const J = require('./journal.js');
 
 const CFG_PATH = path.join(__dirname, 'kis-config.json');
 const LOG_FILE = path.join(__dirname, 'autotrade-log.jsonl');
@@ -19,7 +20,10 @@ const DEFAULTS = {
   pin: '', dry: true, allowLive: false, orderType: 'market', excgId: 'KRX',
   auto: { on: false, buyScoreMin: 3, requireVix30: false, positionPct: 10,
     maxHoldings: 5, maxBuysPerDay: 3, stopLossPct: -5, takeProfitPct: 10,
-    loopSeconds: 60, universeTop: 200, maxCandidates: 5 },
+    loopSeconds: 60, universeTop: 200, maxCandidates: 5,
+    skipLosers: false, loserMinSells: 2, loserBlockDays: 30,
+    mode: 'swing', holdDays: 0, rsiBuy: false, rsiMax: 30, signal: 'score', regime: 'off',
+    dayEntryFrom: '09:05', dayEntryTo: '14:30', dayExitAt: '15:15' },
 };
 let C = JSON.parse(JSON.stringify(DEFAULTS));
 try {
@@ -73,6 +77,7 @@ async function kis(method, p, trId, body, query) {
   if (j.rt_cd && j.rt_cd !== '0') log({ kind: 'kis_err', trId, rc: j.rt_cd, msg: j.msg1 || j.msg_cd });
   return j;
 }
+async function lastPrice(code) { try { const p = await price(code); return Number(p.output?.stck_prpr || 0); } catch (e) { return 0; } }
 async function price(code) { return kis('GET', '/uapi/domestic-stock/v1/quotations/inquire-price', 'FHKST01010100', null, { FID_COND_MRKT_DIV_CODE: 'J', FID_INPUT_ISCD: code }); }
 async function balance() {
   const trId = C.env === 'real' ? 'TTTC8434R' : 'VTTC8434R';
@@ -89,7 +94,19 @@ async function balance() {
   const o2 = (j.output2 || [])[0] || {};
   return { cash: Number(o2.dnca_tot_amt || 0), buyable: Number(o2.prvs_rcdl_excc_amt || o2.dnca_tot_amt || 0), holdings };
 }
-async function order(side, code, qty) {
+let NAMEC = {};
+async function stockInfo(code) {
+  if (NAMEC[code]) return NAMEC[code];
+  try {
+    const r = await fetch(`http://127.0.0.1:${PORT}/api/krxstock?q=${encodeURIComponent(code)}`);
+    const j = await r.json();
+    const it = (j.items || []).find(x => x.code === code) || (j.items || [])[0];
+    if (it) { NAMEC[code] = { name: it.name, market: it.market }; return NAMEC[code]; }
+  } catch (e) {}
+  return { name: code };
+}
+async function order(side, code, qty, meta) {
+  meta = meta || {};
   if (!C.appKey || !C.account) throw new Error('KIS 설정이 필요합니다.');
   if (C.env === 'real' && !C.dry && !C.allowLive) throw new Error('실전 주문이 잠겨 있습니다(allowLive=false). 설정에서 허용해야 주문됩니다.');
   const trId = C.env === 'real' ? (side === 'sell' ? 'TTTC0011U' : 'TTTC0012U') : (side === 'sell' ? 'VTTC0011U' : 'VTTC0012U');
@@ -100,10 +117,17 @@ async function order(side, code, qty) {
     ORD_QTY: String(qty), ORD_UNPR: unpr, EXCG_ID_DVSN_CD: C.excgId,
     SLL_TYPE: side === 'sell' ? '01' : '', CNDT_PRIC: '',
   };
-  if (C.dry) { log({ kind: 'dry_order', side, code, qty }); return { dry: true, msg: 'DRY-RUN: 주문 미전송', body }; }
+  const info = await stockInfo(code);
+  const price = C.dry ? (C.orderType === 'limit' ? Number(unpr) || 0 : await lastPrice(code)) : Number(unpr) || await lastPrice(code);
+  if (C.dry) {
+    const rec = J.add({ side, code, name: info.name, qty, price, reason: meta.reason || '수동 주문', src: meta.src || 'manual', env: C.env, dry: true });
+    log({ kind: 'dry_order', side, code, name: info.name, qty, journalId: rec.id });
+    return { dry: true, msg: 'DRY-RUN: 주문 미전송', body, journal: rec };
+  }
   const j = await kis('POST', '/uapi/domestic-stock/v1/trading/order-cash', trId, body);
-  log({ kind: 'order', side, code, qty, rc: j.rt_cd, odno: j.output?.ODNO, msg: j.msg1 });
-  return j;
+  const rec = J.add({ side, code, name: info.name, qty, price, reason: meta.reason || '수동 주문', src: meta.src || 'manual', env: C.env, dry: false, odno: j.output?.ODNO });
+  log({ kind: 'order', side, code, name: info.name, qty, rc: j.rt_cd, odno: j.output?.ODNO, msg: j.msg1, journalId: rec.id });
+  return { ...j, journal: rec };
 }
 
 // ── 신호 → 후보 ─────────────────────────────
@@ -111,6 +135,7 @@ async function signals() {
   const r = await fetch(`http://127.0.0.1:${PORT}/api/krxscan`);
   const j = await r.json();
   if (j.loading) throw new Error('앱이 전 종목 스캔을 계산 중입니다.');
+  if ((C.auto.regime || 'off') !== 'off') { try { j.kospi = await (await fetch(`http://127.0.0.1:${PORT}/api/kospireg`)).json(); } catch (e) { j.kospi = { ok: false }; } }
   return j;
 }
 function candidates(sig) {
@@ -122,6 +147,13 @@ function candidates(sig) {
   const byVal = [...rows].sort((a, b) => (b.trdval || 0) - (a.trdval || 0));
   const topN = new Set(byVal.slice(0, Math.max(1, Math.round(A.universeTop / 10))).map(x => x.code));
   if (A.requireVix30 && !(sig.vix != null && sig.vix >= 30)) return { list: [], note: `VIX ${sig.vix ?? '--'} < 30 → 보류` };
+  const rg = A.regime || 'off', kp = sig.kospi;
+  if (rg !== 'off') {
+    // 장세 필터: 코스피 데이터를 못 받으면 안전하게 신규 매수 보류
+    if (!kp || !kp.ok) return { list: [], note: '장세 필터: 코스피 데이터 없음 → 신규 매수 보류' };
+    const pass = kp.above && (rg !== 'strong' || kp.rising);
+    if (!pass) return { list: [], note: `장세 필터: 코스피 ${kp.close} / 20일선 ${kp.ma20}${rg === 'strong' ? (kp.rising ? ' 상승' : ' 하락') : ''} → 신규 매수 보류` };
+  }
   rows.forEach(x => {
     let s = 0; const why = [];
     if (x.gc) { s += W.gc; why.push('골든크로스'); }
@@ -130,8 +162,42 @@ function candidates(sig) {
     if (topN.has(x.code)) { s += W.top; why.push('거래대금'); }
     x._s = s; x._why = why;
   });
-  rows = rows.filter(x => x._s >= A.buyScoreMin).sort((a, b) => b._s - a._s || (b.trdval || 0) - (a.trdval || 0));
-  return { list: rows.slice(0, A.maxCandidates), note: `${rows.length}개 후보` };
+  let rsiRows = [];
+  if (A.rsiBuy && rsiAllowed(A)) {
+    // RSI<기준 종목은 점수와 무관하게 후보(거래대금 상위 universeTop 안에서, 레버리지·인버스·우선주 제외)
+    const pool = (sig.rsiLow || []).filter(x => (x.trdRank || 1e9) <= (A.universeTop || 200) && x.rsi != null && x.rsi < (A.rsiMax || 30) && !/레버리지|인버스|우$|우B$/.test(x.name || ''));
+    rsiRows = pool.slice(0, A.maxCandidates).map(x => ({ ...x, _s: A.buyScoreMin, _why: ['RSI' + x.rsi + '<' + (A.rsiMax || 30), '보유 ' + A.holdDays + '일'] }));
+  }
+  if ((A.signal || 'score') === 'trend') {
+    // 추세·모멘텀 상위: 20일선 위 + 1주 +3% 초과 종목을 1주 상승률 순으로 (점수 임계 대신 사용)
+    rows = (sig.trendTop || []).filter(x => (x.trdRank || 1e9) <= (A.universeTop || 200) && !/레버리지|인버스|우$|우B$/.test(x.name || ''))
+      .map(x => ({ ...x, _s: A.buyScoreMin, _why: ['추세·모멘텀', '1주 +' + x.mom5 + '%', '거래대금 ' + x.trdRank + '위'] }));
+  } else rows = rows.filter(x => x._s >= A.buyScoreMin);
+  if ((A.signal || 'score') !== 'trend') rows = rows.sort((a, b) => b._s - a._s || (b.trdval || 0) - (a.trdval || 0));
+  const seen = new Set(), list = [];
+  rsiRows.concat(rows).forEach(x => { if (!seen.has(x.code) && list.length < A.maxCandidates) { seen.add(x.code); list.push(x); } });
+  const sn = (A.signal || 'score') === 'trend' ? '추세·모멘텀 ' : '점수 ';
+  const rn = A.rsiBuy ? (rsiAllowed(A) ? ` · RSI 후보 ${rsiRows.length}` : ' · RSI 매수 꺼짐(10~20일 보유일 때만)') : '';
+  return { list, note: `${rows.length}개 ${sn}후보${rn}` };
+}
+// ── 매매 방식 ───────────────────────────────
+//  swing: 기존(손절·익절, holdDays>0 이면 기간 청산)  short: 단기(최대 holdDays 거래일)  day: 당일(장 마감 전 전량 청산)
+const MODE_PRESET = {
+  swing: { stopLossPct: -5, takeProfitPct: 10, holdDays: 0, signal: 'score' },
+  short: { stopLossPct: -3, takeProfitPct: 4, holdDays: 3, signal: 'trend' },
+  day:   { stopLossPct: -1.5, takeProfitPct: 2, holdDays: 0, signal: 'trend' },
+};
+/** RSI 매수는 10~20거래일 보유(스윙 + 기간 청산)일 때만 허용 — 백테스트에서 5일 이하 보유는 우위가 없었음 */
+function rsiAllowed(A) { A = A || C.auto; return (A.mode || 'swing') === 'swing' && A.holdDays >= 10 && A.holdDays <= 20; }
+function kstNow() { return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })); }
+function hm(s) { const [h, m] = String(s || '0:0').split(':').map(Number); return h * 60 + (m || 0); }
+function kstMin() { const d = kstNow(); return d.getHours() * 60 + d.getMinutes(); }
+/** 평일 기준 경과 거래일(공휴일 미반영) */
+function bizDaysSince(iso) {
+  if (!iso) return 0; const a = new Date(new Date(iso).toLocaleString('en-US', { timeZone: 'Asia/Seoul' })), b = kstNow();
+  a.setHours(0, 0, 0, 0); b.setHours(0, 0, 0, 0); let n = 0;
+  for (const d = new Date(a); d < b; d.setDate(d.getDate() + 1)) { const w = d.getDay(); if (w !== 0 && w !== 6) n++; }
+  return n;
 }
 function inHours() {
   const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
@@ -147,24 +213,38 @@ async function autoTick() {
   if (!inHours()) { log({ kind: 'auto_wait', msg: '장 시간 아님' }); return; }
   running = true;
   try {
+    const A = C.auto, mode = A.mode || 'swing', now = kstMin();
     const bal = await balance();
+    const sold = new Set();
     for (const h of bal.holdings) {
-      if (h.pnlPct <= C.auto.stopLossPct) { log({ kind: 'auto_stop_loss', name: h.name, pnl: h.pnlPct }); await order('sell', h.code, h.qty); }
-      else if (h.pnlPct >= C.auto.takeProfitPct) { log({ kind: 'auto_take_profit', name: h.name, pnl: h.pnlPct }); await order('sell', h.code, h.qty); }
+      const days = bizDaysSince(J.heldSince(h.code));
+      const auto = J.heldSince(h.code) != null; // 앱 일지에 매수 기록이 있는 종목만 기간·당일 청산(직접 산 종목은 손절·익절만)
+      let why = null, kind = null;
+      if (A.stopLossPct < 0 && h.pnlPct <= A.stopLossPct) { kind = 'auto_stop_loss'; why = '자동 손절 ' + h.pnlPct + '%'; }
+      else if (A.takeProfitPct > 0 && h.pnlPct >= A.takeProfitPct) { kind = 'auto_take_profit'; why = '자동 익절 +' + h.pnlPct + '%'; }
+      else if (auto && mode === 'day' && now >= hm(A.dayExitAt)) { kind = 'auto_day_exit'; why = '당일 매매 장 마감 전 청산 ' + (h.pnlPct >= 0 ? '+' : '') + h.pnlPct + '%'; }
+      else if (auto && A.holdDays > 0 && days >= A.holdDays) { kind = 'auto_time_exit'; why = '보유 ' + days + '거래일 기간 청산 ' + (h.pnlPct >= 0 ? '+' : '') + h.pnlPct + '%'; }
+      if (kind) { log({ kind, name: h.name, pnl: h.pnlPct, days }); await order('sell', h.code, h.qty, { reason: why, src: 'auto' }); sold.add(h.code); }
     }
+    if (mode === 'day' && (now < hm(A.dayEntryFrom) || now > hm(A.dayEntryTo))) { log({ kind: 'auto_wait', msg: `당일 매매 신규 진입 시간(${A.dayEntryFrom}~${A.dayEntryTo}) 아님` }); return; }
     const sig = await signals(); const { list, note } = candidates(sig);
     log({ kind: 'auto_scan', note, vix: sig.vix, n: list.length });
-    const held = new Set(bal.holdings.map(h => h.code));
+    const held = new Set(bal.holdings.filter(h => !sold.has(h.code)).map(h => h.code));
+    sold.forEach(c => held.add(c)); // 같은 날 판 종목은 다시 사지 않음
+    let blocked = [];
+    if (C.auto.skipLosers) { blocked = J.losers(C.auto.loserMinSells || 2, C.auto.loserBlockDays == null ? 30 : C.auto.loserBlockDays).filter(o => !o.released).map(o => o.code); if (blocked.length) log({ kind: 'auto_skip_losers', codes: blocked }); }
+    const blockedSet = new Set(blocked);
     for (const c of list) {
+      if (blockedSet.has(c.code)) { log({ kind: 'auto_skip', name: c.name, code: c.code, why: '손실 반복 종목 제외' }); continue; }
       if (state.buys >= C.auto.maxBuysPerDay) break;
-      if (held.size >= C.auto.maxHoldings) break;
+      if (held.size - sold.size >= C.auto.maxHoldings) break;
       if (held.has(c.code)) continue;
       const budget = Math.floor(bal.cash * C.auto.positionPct / 100);
       if (budget < 10000) break;
       let px = c.price; if (!px) { const p = await price(c.code); px = Number(p.output?.stck_prpr || 0); }
       const qty = Math.floor(budget / Number(px)); if (qty < 1) continue;
       log({ kind: 'auto_buy', name: c.name, code: c.code, score: c._s, why: c._why, qty });
-      await order('buy', c.code, qty);
+      await order('buy', c.code, qty, { reason: '자동 매수[' + ({ swing: '스윙', short: '단기', day: '당일' }[mode]) + '] · ' + (c._why || []).join('·') + ' (점수 ' + c._s + ')', src: 'auto' });
       state.buys++; held.add(c.code);
     }
   } catch (e) { log({ kind: 'auto_error', msg: String(e && e.message || e) }); }
@@ -212,9 +292,9 @@ async function handle(req, res, url) {
     return jres(res, { ok: true, configured: !!(C.appKey && C.account), env: C.env, dry: C.dry });
   }
 
-  // 이하 PIN 필요
+  // 이하 PIN 필요 (단, PIN을 아직 만들지 않았다면 매매일지 조회·CSV는 허용 — 주문 기능은 계속 차단)
   const c = pinOK(req, sp);
-  if (!c.ok) return jres(res, { ok: false, msg: c.msg }, 403);
+  if (!c.ok && !(url === '/api/kis/journal' && c.code === 'no_pin')) return jres(res, { ok: false, msg: c.msg }, 403);
 
   if (url === '/api/kis/balance') {
     try { const b = await balance(); return jres(res, { ok: true, ...b }); }
@@ -228,12 +308,31 @@ async function handle(req, res, url) {
   }
   if (url === '/api/kis/auto') {
     if (sp.get('on') != null) { C.auto.on = sp.get('on') === '1'; save(); log({ kind: 'auto_toggle', on: C.auto.on }); }
-    const extra = {}; ['buyScoreMin', 'positionPct', 'maxHoldings', 'maxBuysPerDay', 'stopLossPct', 'takeProfitPct', 'loopSeconds', 'maxCandidates', 'universeTop'].forEach(k => { if (sp.get(k) != null) extra[k] = Number(sp.get(k)); });
+    const extra = {}; ['buyScoreMin', 'positionPct', 'maxHoldings', 'maxBuysPerDay', 'stopLossPct', 'takeProfitPct', 'loopSeconds', 'maxCandidates', 'universeTop', 'loserMinSells', 'loserBlockDays'].forEach(k => { if (sp.get(k) != null) extra[k] = Number(sp.get(k)); });
     if (sp.get('requireVix30') != null) extra.requireVix30 = sp.get('requireVix30') === '1';
+    if (sp.get('skipLosers') != null) extra.skipLosers = sp.get('skipLosers') === '1';
+    ['holdDays', 'rsiMax'].forEach(k => { if (sp.get(k) != null) extra[k] = Number(sp.get(k)); });
+    if (sp.get('rsiBuy') != null) extra.rsiBuy = sp.get('rsiBuy') === '1';
+    if (['score', 'trend'].includes(sp.get('signal'))) extra.signal = sp.get('signal');
+    if (['off', 'basic', 'strong'].includes(sp.get('regime'))) extra.regime = sp.get('regime');
+    ['dayEntryFrom', 'dayEntryTo', 'dayExitAt'].forEach(k => { const v = sp.get(k); if (v && /^\d{1,2}:\d{2}$/.test(v)) extra[k] = v; });
+    const md = sp.get('mode');
+    if (md && MODE_PRESET[md]) { extra.mode = md; if (sp.get('preset') === '1') Object.assign(extra, MODE_PRESET[md]); }
+    Object.keys(extra).forEach(k => { if (typeof extra[k] === 'number' && !isFinite(extra[k])) delete extra[k]; });
+    if (extra.holdDays != null) extra.holdDays = Math.max(0, Math.min(60, Math.round(extra.holdDays)));
     if (Object.keys(extra).length) { Object.assign(C.auto, extra); save(); }
-    return jres(res, { ok: true, auto: C.auto });
+    const warn = C.auto.rsiBuy && !rsiAllowed() ? 'RSI 매수는 스윙 + 보유 10~20거래일일 때만 동작합니다. 지금 설정에서는 꺼진 상태로 동작합니다.' : '';
+    return jres(res, { ok: true, auto: C.auto, rsiAllowed: rsiAllowed(), warn });
   }
   if (url === '/api/kis/once') { try { await autoTick(); return jres(res, { ok: true, log: LOGS.slice(-12) }); } catch (e) { return jres(res, { ok: false, msg: String(e && e.message || e) }); } }
+  if (url === '/api/kis/journal') {
+    const q0 = new URL(req.url, 'http://x').searchParams;
+    if (q0.get('view') === 'monthly') return jres(res, { ok: true, monthly: J.monthly(), losers: J.losers(2, C.auto.loserBlockDays == null ? 30 : C.auto.loserBlockDays), blockDays: C.auto.loserBlockDays });
+    if (q0.get('csv') === 'monthly') { res.writeHead(200, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="monthly-report.csv"', 'Cache-Control': 'no-store' }); return res.end(J.monthlyCsv()); }
+    const sp2 = new URL(req.url, 'http://x').searchParams;
+    if (sp2.get('csv') === '1') { res.writeHead(200, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="trade-journal.csv"', 'Cache-Control': 'no-store' }); return res.end(J.csv()); }
+    return jres(res, { ok: true, ...J.summary() });
+  }
   if (url === '/api/kis/log') { return jres(res, { ok: true, log: LOGS.slice(-60) }); }
 
   return jres(res, { ok: false, msg: 'unknown' }, 404);
@@ -247,4 +346,4 @@ function startLoop() {
 }
 startLoop();
 
-module.exports = { init, handle, startLoop, _t: { C, autoTick } };
+module.exports = { init, handle, startLoop, _t: { C, autoTick, candidates, rsiAllowed, bizDaysSince, MODE_PRESET } };

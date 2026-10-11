@@ -4,6 +4,11 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+const KIS = require('./kis.js');
+const COINS = require('./coins.js');
+const COINBT = require('./coinbt.js');
+const KRBT = require('./krbt.js');
+const INTRA = require('./intrabt.js');
 const PORT = process.env.PORT || 8080;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 const CACHE_MS = 5 * 60 * 1000;
@@ -161,6 +166,8 @@ async function yahooSeries(sym, range) {
   }
   return null;
 }
+/** CNN F&G 현재값을 숫자로 (now 는 {score,...} 객체) */
+function fngNum(f) { const v = f && f.now; const n = v && typeof v === 'object' ? v.score : v; return n == null || !isFinite(+n) ? null : +n; }
 function krxAction(s, price, fg, vX) {
   if (!s || s.length < 12) return { action: '관망', strength: '-', why: '데이터 부족' };
   const n = s.length, avg = a => s.slice(-a).reduce((x, y) => x + y, 0) / a;
@@ -178,7 +185,9 @@ function krxAction(s, price, fg, vX) {
   else if (score <= -2) { act = '매도'; strength = '강'; }
   else if (score === -1) { act = '매도'; strength = '약'; }
   else { act = '관망'; strength = '-'; }
-  return { action: act, strength, score };
+  const comp = { trend: price > sma ? 1 : -1, mom: mom > 3 ? 1 : mom < -3 ? -1 : 0, pos: pos < 25 ? 1 : pos > 80 ? -1 : 0,
+    fg: fg == null ? 0 : fg <= 25 ? 1 : fg >= 75 ? -1 : 0, vix: vX == null ? 0 : vX >= 30 ? 1 : vX < 15 ? -1 : 0, rsi: 0 };
+  return { action: act, strength, score, comp, mom: +mom.toFixed(2) };
 }
 function rsi14(cl){ if(!cl||cl.length<15)return null; let g=0,l=0; for(let i=cl.length-14;i<cl.length;i++){const d=cl[i]-cl[i-1]; if(d>=0)g+=d; else l-=d;} if(l===0)return 100; const rs=g/l; return +(100-100/(1+rs)).toFixed(1); }
 function maArr(cl, n){ const out=[]; let sum=0; for(let i=0;i<cl.length;i++){ sum+=cl[i]; if(i>=n) sum-=cl[i-n]; out.push(i+1>=n ? sum/n : null); } return out; }
@@ -207,7 +216,7 @@ async function getKrxTop() {
   rows.sort((a, b) => b.trdval - a.trdval);
   const top = rows.slice(0, 60);
   const [fng, vx] = await Promise.all([cached('fng', getFng).catch(() => null), cached('vix', getVix).catch(() => null)]);
-  const fg = fng && fng.now, vX = vx && vx.price;
+  const fg = fngNum(fng), vX = vx && vx.price;
   const sigs = await Promise.all(top.map(async x => {
     const ysym = x.code + (x.market === 'KOSDAQ' ? '.KQ' : '.KS');
     const [r, r6] = await Promise.all([
@@ -217,11 +226,11 @@ async function getKrxTop() {
     if (!r || !r.series || r.series.length < 12) return null;
     const cl = r.series.map(p => p[1]);
     const g = krxAction(cl, x.price || r.price, fg, vX);
-    g.rsi = rsi14(cl);
+    g.rsi = rsi14(cl); if (g.comp && g.rsi != null) g.comp.rsi = g.rsi < 30 ? 1 : g.rsi > 70 ? -1 : 0;
     g.ma = r6 && r6.series ? maTurn(r6.series.map(p => p[1])) : null;
     return g;
   }));
-  top.forEach((x, i) => { const g = sigs[i]; if (g) { x.action = g.action; x.strength = g.strength; x.rsi = g.rsi; x.ma = g.ma; } });
+  top.forEach((x, i) => { const g = sigs[i]; if (g) { x.action = g.action; x.strength = g.strength; x.rsi = g.rsi; x.ma = g.ma; x.comp = g.comp; x.mom5 = g.mom; x.score = g.score; } });
   return { basDd: ds.basDd, fng: fg ?? null, vix: vX ?? null, rows: top, computedAt: new Date().toISOString() };
 }
 async function getKrxHist(code, market) {
@@ -273,7 +282,7 @@ function candle(cl, op, hi, lo){
 }
 function getKrxScan() {
   const h = cache.krxhist && (cache.krxhist.v || cache.krxhist); if(!h || !h.days || !h.s) return { loading: true, list: [], hammer: [], counts:{} };
-  const turning=[], hammer=[], orders={정배열:0,전환중:0,역배열:0};
+  const turning=[], hammer=[], all=[], orders={정배열:0,전환중:0,역배열:0};
   for (const k of Object.keys(h.s)) {
     const o=h.s[k]; const cl=o.c.filter(x=>x!=null); if(cl.length<25) continue;
     const m5=maArr(cl,5), m10=maArr(cl,10), m20=maArr(cl,20), L=cl.length-1;
@@ -283,8 +292,10 @@ function getKrxScan() {
     const up20 = m5[L]>m20[L];
     const st = (m5[L]>m10[L]&&m10[L]>m20[L])?'정배열':(up20?'전환중':'역배열'); orders[st]++;
     const rsi = rsi14(cl);
-    const base = { code:k, name:o.n, market:o.m, price:o.px, pct:o.pct, trdval:o.td, rsi,
+    const mom5 = L>=5 && cl[L-5] ? +((cl[L]/cl[L-5]-1)*100).toFixed(2) : null;
+    const base = { code:k, name:o.n, market:o.m, price:o.px, pct:o.pct, trdval:o.td, rsi, mom5,
       ma5:+m5[L].toFixed(0), ma10:+m10[L].toFixed(0), ma20:+m20[L].toFixed(0), crossAgo, order:st };
+    all.push(base);
     if (up20 && crossAgo!=null && crossAgo<=5) turning.push(base);
     const n=o.c.length;
     if (n>=3) {
@@ -299,7 +310,12 @@ function getKrxScan() {
   }
   turning.sort((a,b)=>(b.trdval||0)-(a.trdval||0));
   hammer.sort((a,b)=>(b.trdval||0)-(a.trdval||0)); hammer.splice(20);
-  return { first:h.first, last:h.last, universe:h.count, days:h.days.length, turning, hammer, orders, computedAt:new Date().toISOString() };
+  // RSI 과매도 후보: 거래대금 순위(trdRank) 포함, RSI<35 만
+  all.sort((a,b)=>(b.trdval||0)-(a.trdval||0)); all.forEach((x,i)=>x.trdRank=i+1);
+  const rsiLow = all.filter(x=>x.rsi!=null&&x.rsi<35&&x.trdRank<=500);
+  // 추세·모멘텀 상위: 20일선 위 + 1주 +3% 초과, 1주 등락률 순 (단기·당일 자동매매 기본 신호)
+  const trendTop = all.filter(x=>x.trdRank<=500&&x.mom5!=null&&x.mom5>3&&x.price!=null&&x.price>x.ma20).sort((a,b)=>b.mom5-a.mom5).slice(0,80);
+  return { first:h.first, last:h.last, universe:h.count, days:h.days.length, turning, hammer, rsiLow, trendTop, orders, computedAt:new Date().toISOString() };
 }
 
 async function getKrxIdx() {
@@ -374,7 +390,7 @@ async function getForeign() {
 
 
 function recs(quotes, fng, vix) {
-  const fg = fng?.now, vX = vix?.price;
+  const fg = fngNum(fng), vX = vix?.price;
   const base = '분할 매수·손절 원칙 유지';
   return quotes.map(q => {
     if (q.error) return { symbol: q.symbol, name: q.name, sector: q.sector, error: true };
@@ -542,6 +558,23 @@ async function getCompare() {
   };
 }
 
+async function getCompareMulti(syms) {
+  const ser = await Promise.all(syms.map(sym => cached('d5_' + sym, () => getDaily(sym), 12 * 3600e3).then(v => [sym, v]).catch(() => [sym, null])));
+  const ok = ser.filter(x => x[1] && x[1].length);
+  const bad = ser.filter(x => !x[1]).map(x => x[0]);
+  if (!ok.length) throw new Error('no data');
+  // 날짜 합집합 + 전방채움(서로 다른 휴장일 보정), 모든 종목이 시작된 날 이후만
+  const maps = ok.map(([sym, arr]) => { const m = {}; arr.forEach(x => { m[dkey(x[0])] = x[1]; }); return [sym, m]; });
+  const starts = maps.map(([, m]) => Object.keys(m).sort()[0]);
+  const start = starts.sort().slice(-1)[0];
+  const all = [...new Set(maps.flatMap(([, m]) => Object.keys(m)))].filter(k => k >= start).sort();
+  const series = maps.map(([sym, m]) => { let lastv = null; return { sym, v: all.map(k => { if (m[k] != null) lastv = m[k]; return lastv; }) }; });
+  let i0 = 0; while (i0 < all.length && series.some(x => x.v[i0] == null)) i0++;
+  if (i0) { all.splice(0, i0); series.forEach(x => x.v.splice(0, i0)); }
+  const names = { 'USDKRW=X': '원·달러 환율', '360750.KS': 'TIGER 미국S&P500' }; QUOTES.forEach(q => { names[q[0]] = q[1]; });
+  return { d: all, series: series.map(x => ({ sym: x.sym, name: names[x.sym] || x.sym, v: x.v })), bad, from: all[0], to: all[all.length - 1] };
+}
+
 async function getKr() {
   const SYMS = [['^KS11', '코스피'], ['^KQ11', '코스닥'], ['USDKRW=X', '원·달러 환율']];
   const items = await Promise.all(SYMS.map(async ([sym, name]) => {
@@ -686,6 +719,9 @@ const STATIC = {
 
 http.createServer(async (req, res) => {
   const url = req.url.split('?')[0];
+  if (url.indexOf('/api/kis') === 0) {
+    try { return await KIS.handle(req, res, url); } catch (e) { res.writeHead(500, {'Content-Type': 'application/json; charset=utf-8'}); return res.end(JSON.stringify({ ok:false, msg:String(e && e.message || e) })); }
+  }
   try {
     if (url === '/api/setkrx') {
       const m2 = (req.url.match(/[?&]key=([^&]*)/) || [])[1] || '';
@@ -774,6 +810,70 @@ http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify(data));
     }
+    if (url === '/api/coinbt') {
+      const wq = decodeURIComponent((req.url.match(/[?&]w=([^&]*)/) || [])[1] || '');
+      const hq = (req.url.match(/[?&]hold=(\d+)/) || [])[1];
+      const a = wq.split(',').map(Number);
+      const custom = a.length === 3 && a.every(x => x >= 0 && x <= 100) ? { v: a[0], m: a[1], n: a[2] } : null;
+      const data = await COINBT.backtest(custom, hq);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(JSON.stringify(data));
+    }
+    if (url === '/api/krbt') {
+      const hq = (req.url.match(/[?&]hold=(\d+)/) || [])[1];
+      const [ds, fng] = await Promise.all([cached('krxstocks', getKrxStocks, 3600e3).catch(() => ({})), cached('fng', getFng).catch(() => null)]);
+      const uni = (ds.list || []).filter(x => x.trdval && /KOSPI|KOSDAQ/.test(x.market) && !/스팩|SPAC|우$|우B$/.test(x.name))
+        .sort((a, b) => b.trdval - a.trdval).slice(0, (req.url.match(/[?&]n=200\b/) ? 200 : 60)).map(x => ({ sym: x.code + (x.market === 'KOSDAQ' ? '.KQ' : '.KS'), name: x.name }));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      if (!uni.length) return res.end(JSON.stringify({ error: 'KRX 종목 목록을 불러오지 못했습니다' }));
+      const wq = decodeURIComponent((req.url.match(/[?&]w=([^&]*)/) || [])[1] || '');
+      const wa = wq ? wq.split(',').map(Number) : null;
+      const fq = (req.url.match(/[?&]fee=([\d.]+)/) || [])[1];
+      const data = await KRBT.backtest(uni, fng && fng.history, hq, wa && wa.length === 6 ? wa : null, fq == null ? 0.3 : +fq);
+      return res.end(JSON.stringify(data));
+    }
+    if (url === '/api/kospireg') {
+      const r = await cached('kospireg', async () => {
+        const y = await yahooSeries('^KS11', '3mo'); const c = y && y.series ? y.series.map(p => p[1]) : [];
+        if (c.length < 26) return { ok: false };
+        const ma = e => c.slice(e - 19, e + 1).reduce((a, b) => a + b, 0) / 20, L = c.length - 1;
+        const m = ma(L), m5 = ma(L - 5);
+        return { ok: true, close: +c[L].toFixed(2), ma20: +m.toFixed(2), ma20prev5: +m5.toFixed(2), above: c[L] > m, rising: m > m5, at: new Date().toISOString() };
+      }, 15 * 60e3).catch(() => ({ ok: false }));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(JSON.stringify(r));
+    }
+    if (url === '/api/intrabt') {
+      const g = k => (req.url.match(new RegExp('[?&]' + k + '=(-?[\\d.]+)')) || [])[1];
+      const ds = await cached('krxstocks', getKrxStocks, 3600e3).catch(() => ({}));
+      const N = g('n') === '200' ? 200 : 60;
+      const uni = (ds.list || []).filter(x => x.trdval && /KOSPI|KOSDAQ/.test(x.market) && !/스팩|SPAC|우$|우B$/.test(x.name))
+        .sort((a, b) => b.trdval - a.trdval).slice(0, N).map(x => ({ sym: x.code + (x.market === 'KOSDAQ' ? '.KQ' : '.KS'), name: x.name }));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      if (!uni.length) return res.end(JSON.stringify({ error: 'KRX 종목 목록을 불러오지 못했습니다' }));
+      const data = await INTRA.backtest(uni, { k: g('k'), fee: g('fee'), sl: g('sl'), tp: g('tp') });
+      return res.end(JSON.stringify(data));
+    }
+    if (url === '/api/krxsearch') {
+      const q = decodeURIComponent((req.url.match(/[?&]q=([^&]*)/) || [])[1] || '').trim();
+      const [ds, ef] = await Promise.all([cached('krxstocks', getKrxStocks, 3600e3).catch(() => ({})), cached('krxetf', getKrxEtf, 3600e3).catch(() => ({}))]);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      if (!q) return res.end(JSON.stringify({ items: [] }));
+      const key = q.toLowerCase().replace(/\s/g, '');
+      const norm = x => String(x || '').toLowerCase().replace(/\s/g, '');
+      const pool = (ds.list || []).map(x => ({ code: x.code, name: x.name, market: x.market, trdval: x.trdval || 0, eng: x.eng || '' }))
+        .concat((ef.items || []).map(x => ({ code: x.code, name: x.name, market: 'ETF', trdval: x.trdval || 0, eng: '' })));
+      const hit = pool.filter(x => norm(x.name).includes(key) || x.code.includes(key) || norm(x.eng).includes(key)).map(x => {
+        const nm = norm(x.name); const rank = nm === key || x.code === key ? 0 : nm.startsWith(key) ? 1 : 2;
+        return { ...x, rank, sym: x.code + (x.market === 'KOSDAQ' ? '.KQ' : '.KS') };
+      }).sort((a, b) => a.rank - b.rank || b.trdval - a.trdval).slice(0, 12).map(({ rank, eng, ...r }) => r);
+      return res.end(JSON.stringify({ basDd: ds.basDd || ef.basDd, items: hit }));
+    }
+    if (url === '/api/coinpicks') {
+      const data = await cached('coinpicks', COINS.getCoinPicks, 20*60e3);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(JSON.stringify(data));
+    }
     if (url === '/api/krxidx') {
       const data = await cached('krxidx', getKrxIdx, 3600e3);
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
@@ -806,6 +906,21 @@ http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify({ usdkrw, rows, skipped: qq.filter(q => !q.error && q.vol != null && (String(q.symbol||'').startsWith('^') || !['USD','KRW'].includes(q.currency||''))).map(q => q.symbol), computedAt: new Date().toISOString() }));
     }
+    if (url === '/api/cmpchoices') {
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      return res.end(JSON.stringify({ list: [['USDKRW=X', '원·달러 환율', 'fx'], ['360750.KS', 'TIGER 미국S&P500', 'etf']].concat(QUOTES.map(q => [q[0], q[1], q[2]])) }));
+    }
+    if (url === '/api/cmpmulti') {
+      const raw = decodeURIComponent((req.url.match(/[?&]syms=([^&]*)/) || [])[1] || '');
+      const syms = [...new Set(raw.split(',').map(x => x.trim().toUpperCase()).filter(x => /^[\^A-Z0-9.=\-]{1,20}$/.test(x)))].slice(0, 3);
+      if (syms.length < 1) { res.writeHead(400, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ error: '종목을 1~3개 지정하세요' })); }
+      const data = await cached('cmpm_' + syms.join(','), () => getCompareMulti(syms), 3600e3);
+      try { const ds = cache.krxstocks && (cache.krxstocks.v || cache.krxstocks); const ef = cache.krxetf && (cache.krxetf.v || cache.krxetf);
+        const nm = {}; ((ds && ds.list) || []).forEach(x => { nm[x.code] = x.name; }); ((ef && ef.items) || []).forEach(x => { nm[x.code] = x.name; });
+        data.series.forEach(x => { if (x.name === x.sym) { const c = x.sym.split('.')[0]; if (nm[c]) x.name = nm[c]; } }); } catch (e) {}
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      return res.end(JSON.stringify(data));
+    }
     if (url === '/api/compare') {
       const data = await cached('compare', getCompare, 3600e3);
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
@@ -837,6 +952,7 @@ http.createServer(async (req, res) => {
     res.end(JSON.stringify({ error: String(e.message || e) }));
   }
 }).listen(PORT, async () => {
+  try { KIS.init(PORT); } catch(e){}
   try { cache.krxhist = await cached('krxhist', getKrxHist, 6*3600e3); console.log('[warm] krxhist', cache.krxhist && cache.krxhist.count, '종목'); } catch(e){ console.log('[warm] krxhist fail', e && e.message); }
   console.log('공포지수 앱 실행 중: http://localhost:' + PORT);
   (async () => {
