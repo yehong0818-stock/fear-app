@@ -1,0 +1,23 @@
+# 비밀키 · 환경별 파일 (절대 올리지 않음)
+krx-key.txt
+kis-config.json
+
+# 런타임 생성 파일
+autotrade-log.jsonl
+autotrade-state.json
+symbols.json
+corr-cache.json
+
+# 의존성 · 로그
+node_modules/
+*.log
+npm-debug.log*
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 트레이딩 설정 (키·계좌·PIN 포함 — 절대 커밋 금지)
+kis-config.json

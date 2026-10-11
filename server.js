@@ -4,6 +4,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+const KIS = require('./kis.js');
 const PORT = process.env.PORT || 8080;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 const CACHE_MS = 5 * 60 * 1000;
@@ -686,6 +687,9 @@ const STATIC = {
 
 http.createServer(async (req, res) => {
   const url = req.url.split('?')[0];
+  if (url.indexOf('/api/kis') === 0) {
+    try { return await KIS.handle(req, res, url); } catch (e) { res.writeHead(500, {'Content-Type': 'application/json; charset=utf-8'}); return res.end(JSON.stringify({ ok:false, msg:String(e && e.message || e) })); }
+  }
   try {
     if (url === '/api/setkrx') {
       const m2 = (req.url.match(/[?&]key=([^&]*)/) || [])[1] || '';
@@ -837,6 +841,7 @@ http.createServer(async (req, res) => {
     res.end(JSON.stringify({ error: String(e.message || e) }));
   }
 }).listen(PORT, async () => {
+  try { KIS.init(PORT); } catch(e){}
   try { cache.krxhist = await cached('krxhist', getKrxHist, 6*3600e3); console.log('[warm] krxhist', cache.krxhist && cache.krxhist.count, '종목'); } catch(e){ console.log('[warm] krxhist fail', e && e.message); }
   console.log('공포지수 앱 실행 중: http://localhost:' + PORT);
   (async () => {

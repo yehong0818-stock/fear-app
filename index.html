@@ -404,6 +404,12 @@ body{transition:background .25s ease,color .25s ease}
 .tabs button[aria-pressed="true"]{background:var(--ink);color:var(--frost);border-color:var(--ink)}
 [data-tab]{scroll-margin-top:64px}
 @media(max-width:640px){.tabs button{padding:7px 13px;font-size:13px}}
+.kis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px}
+.kis-grid input,.kis-grid select{border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:600 12px var(--mono);padding:7px 9px;width:100%}
+.kis-grid label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--mute);font-weight:700}
+.kis-grid label.kis-chk{flex-direction:row;align-items:center;gap:6px;justify-content:flex-start}
+.kis-grid label.kis-chk input{width:auto}
+.kis-warn{border-left:4px solid var(--hot);background:rgba(232,80,26,.08);padding:10px 14px;border-radius:0 8px 8px 0;font-size:13.5px;margin:8px 0 0}
 </style>
 </head>
 <body>
@@ -423,6 +429,7 @@ body{transition:background .25s ease,color .25s ease}
   <button type="button" data-t="coin">코인</button>
   <button type="button" data-t="quote">시세·비교</button>
   <button type="button" data-t="corr">상관</button>
+  <button type="button" data-t="live">실전매매</button>
 </nav>
 
 <section class="favbar" id="favSec">
@@ -647,6 +654,62 @@ body{transition:background .25s ease,color .25s ease}
     <div class="panel"><h4>따로 움직이는 짝 (분산 효과)</h4><div id="pBot"></div></div>
   </div>
   <p class="note" style="border:0;margin-top:10px;padding:0">변화 알림 기본 기준: <b>급변</b> = 51주 상관이 지난주보다 ±0.10 이상 바뀜(과거 30주 동안 상위 1% 변화), <b>단기 이탈</b> = 최근 13주 상관이 51주 상관과 ±0.50 이상 다름(상위 5%). 「기준 조절」에서 바꿀 수 있습니다. 13주 상관은 표본이 작아 흔들림이 크므로 "흐름이 바뀌는 중"이라는 신호로만 보세요.<br>한국·대만·미국 장과 24시간 거래되는 코인의 시간 차이를 줄이려고 금요일 종가 기준 주간 수익률을 씁니다. 매주 금요일 미국 장 마감 후(한국시간 토요일 아침) 최근 51주로 다시 계산합니다. 51주 표본에서는 ±0.28 이내 값은 0과 구별하기 어렵습니다.</p>
+</section>
+
+<section id="liveSec" data-tab="live">
+  <h2>실전매매 <small id="kisSub">한국투자증권 KIS · PIN 보호 · 기본은 모의투자</small></h2>
+
+  <div class="panel" style="margin-bottom:10px">
+    <div class="rec-h"><b>KIS 연결 설정</b><span id="kisState" class="note" style="border:0;padding:0;margin:0"></span></div>
+    <div class="kis-grid">
+      <input id="kisAppKey" placeholder="앱키(App Key)">
+      <input id="kisAppSec" type="password" placeholder="앱시크릿(App Secret)">
+      <input id="kisAcct" placeholder="계좌번호 8자리">
+      <input id="kisProd" placeholder="계좌상품코드" value="01">
+      <select id="kisEnv"><option value="demo">모의투자</option><option value="real">실전투자</option></select>
+      <input id="kisPin" type="password" placeholder="트레이딩 PIN (직접 정함)">
+      <label class="kis-chk"><input type="checkbox" id="kisDry" checked> DRY-RUN(주문 미전송)</label>
+      <label class="kis-chk"><input type="checkbox" id="kisAllow"> 실전 주문 허용</label>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn sm" id="kisSave">설정 저장</button>
+      <button class="btn sm" id="kisReload">상태·잔고 새로고침</button>
+      <span id="kisMsg" class="note" style="border:0;padding:0;margin:0"></span>
+    </div>
+    <p class="kis-warn">PIN을 모르면 주문할 수 없습니다. <b>실전 주문은 ①환경=실전 ②DRY-RUN 해제 ③'실전 주문 허용' 세 가지가 모두</b> 갖춰져야 나갑니다. 기본값은 모의투자 + DRY-RUN이라 실제 주문이 나가지 않습니다. 투자 판단과 손실의 책임은 사용자에게 있습니다.</p>
+  </div>
+
+  <div class="panel" style="margin-bottom:10px">
+    <div class="rec-h"><b>계좌 현황</b><span id="kisBalSub" class="note" style="border:0;padding:0;margin:0"></span></div>
+    <div class="krx-main" id="kisBal"></div>
+    <div class="kq-res" id="kisHold"></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:10px">
+    <div class="rec-h"><b>수동 주문</b><span class="note" style="border:0;padding:0;margin:0">1건 즉시</span></div>
+    <div class="symbar"><input id="kisCode" placeholder="종목코드 (예: 005930)" style="width:180px"><input id="kisQty" type="number" min="1" value="1" style="width:80px">
+      <button class="btn sm" id="kisBuy" style="background:var(--hot);color:#fff;border-color:var(--hot)">매수</button>
+      <button class="btn sm" id="kisSell" style="background:var(--cold);color:#fff;border-color:var(--cold)">매도</button>
+      <span id="kisOMsg" class="note" style="border:0;padding:0;margin:0"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="rec-h"><b>자동매매</b>
+      <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="btn sm" id="kisAuto" aria-pressed="false">자동매매 켜기</button><button class="btn sm" id="kisOnce">1회 점검</button><span id="kisAutoSub" class="note" style="border:0;padding:0;margin:0"></span></span></div>
+    <div class="kis-grid">
+      <label>매수 임계점수<input id="kisScore" type="number" step="1" value="3"></label>
+      <label>종목당 비중%<input id="kisPos" type="number" step="1" value="10"></label>
+      <label>최대 보유<input id="kisMaxH" type="number" step="1" value="5"></label>
+      <label>일일 매수 한도<input id="kisMaxB" type="number" step="1" value="3"></label>
+      <label>손절%<input id="kisSL" type="number" step="1" value="-5"></label>
+      <label>익절%<input id="kisTP" type="number" step="1" value="10"></label>
+      <label class="kis-chk"><input type="checkbox" id="kisVix"> VIX 30 이상만 매수</label>
+      <button class="btn sm" id="kisSaveAuto" style="align-self:end">자동매매 설정 저장</button>
+    </div>
+    <div class="tv-list" id="kisLog" style="margin-top:10px"></div>
+    <p class="note" style="border:0;margin:10px 0 0;padding:0">자동매매는 앱 서버가 켜져 있는 동안에만 동작합니다. 신호는 앱과 동일한 전 종목 스캔(골든크로스·망치형·RSI·거래대금)을 쓰며, 임계점수 이상이면 매수하고 손절·익절은 자동 청산합니다. 장 시간(09:00~15:30)에만 주문합니다.</p>
+  </div>
 </section>
 
 <section data-tab="rec">
@@ -1689,6 +1752,7 @@ syncGcBtn();
     el.querySelectorAll('[data-t]').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-t')===t?'true':'false'); });
     try{ localStorage.setItem('tab',t); }catch(e){}
     window.__tab=t;
+    try{ if(typeof onTabShown==='function') onTabShown(t); }catch(e){}
     try{ window.scrollTo(0,0); }catch(e){}
     setTimeout(function(){ try{ if(typeof applyTheme==='function') applyTheme(document.documentElement.dataset.theme||'dark'); }catch(e){}
       setTimeout(function(){ try{ window.dispatchEvent(new Event('resize')); }catch(e){} },60); },40);
@@ -1699,6 +1763,74 @@ syncGcBtn();
   let t='over'; try{ t=localStorage.getItem('tab')||'over'; }catch(e){}
   setTab(t);
 })();
+
+// ── 실전매매 (KIS) ───────────────────────────
+function kisPin(){ return localStorage.getItem('kis_pin')||''; }
+function kisMsg(el,m,ok){ const e=$(el); if(e){ e.textContent=m||''; e.style.color=ok===false?css('--hot'):ok===true?css('--cool'):''; } }
+async function kisFetch(path,opt){ opt=opt||{}; opt.headers=Object.assign({},opt.headers||{},{'x-trade-pin':kisPin()}); const r=await fetch(path,opt); let j; try{ j=await r.json(); }catch(e){ j={ok:false,msg:'응답 오류'}; } return j; }
+async function loadKis(){
+  try{
+    const st=await fetch('/api/kis/status').then(r=>r.json());
+    window.__kis=st;
+    if($('kisSub'))$('kisSub').textContent=`한국투자증권 KIS · ${st.env==='real'?'실전투자':'모의투자'}${st.dry?' · DRY-RUN':''}${st.hasPin?' · PIN 설정됨':' · PIN 미설정'}`;
+    if($('kisState'))$('kisState').textContent=st.configured?'연결됨 ('+st.account+')':'미설정';
+    if($('kisEnv'))$('kisEnv').value=st.env;
+    if($('kisDry'))$('kisDry').checked=!!st.dry;
+    if($('kisAllow'))$('kisAllow').checked=!!st.allowLive;
+    const A=st.auto||{}; if($('kisScore'))$('kisScore').value=A.buyScoreMin; if($('kisPos'))$('kisPos').value=A.positionPct;
+    if($('kisMaxH'))$('kisMaxH').value=A.maxHoldings; if($('kisMaxB'))$('kisMaxB').value=A.maxBuysPerDay;
+    if($('kisSL'))$('kisSL').value=A.stopLossPct; if($('kisTP'))$('kisTP').value=A.takeProfitPct;
+    if($('kisVix'))$('kisVix').checked=!!A.requireVix30;
+    const b=$('kisAuto'); if(b){ b.setAttribute('aria-pressed',A.on?'true':'false'); b.textContent=A.on?'자동매매 끄기':'자동매매 켜기'; }
+    if($('kisAutoSub'))$('kisAutoSub').textContent=A.on?`작동 중 · ${A.loopSeconds}s 주기`:'꺼짐';
+    if(st.hasPin && st.configured){ await kisBalance(); await kisLog(); }
+    else if($('kisBal')){ $('kisBal').innerHTML='<div class="krx-empty">KIS 설정과 PIN을 저장하면 계좌가 표시됩니다.</div>'; if($('kisHold'))$('kisHold').innerHTML=''; }
+  }catch(e){ kisMsg('kisMsg','상태를 불러오지 못했습니다.',false); }
+}
+async function kisBalance(){
+  const j=await kisFetch('/api/kis/balance');
+  if(!j.ok){ if($('kisBal'))$('kisBal').innerHTML='<div class="krx-empty">'+(j.msg||'잔고 조회 실패')+'</div>'; return; }
+  if($('kisBal'))$('kisBal').innerHTML='<div class="krx-tile"><b>예수금</b><span class="v">'+Number(j.cash).toLocaleString('ko-KR')+'</span> <small style="color:var(--mute)">원</small></div><div class="krx-tile"><b>주문가능</b><span class="v">'+Number(j.buyable||j.cash).toLocaleString('ko-KR')+'</span> <small style="color:var(--mute)">원</small></div>';
+  if($('kisHold'))$('kisHold').innerHTML=(j.holdings||[]).map(h=>{const col=h.pnlPct>=0?css('--hot'):css('--cold');return '<div class="kq-row"><div><div class="kq-nm">'+h.name+' <span class="kq-code">'+h.code+'</span></div><div class="kq-sub">'+h.qty+'주 · 평균 '+Number(h.avg).toLocaleString('ko-KR')+'</div></div><div class="kq-px"><span>'+Number(h.price||0).toLocaleString('ko-KR')+'</span><small style="color:'+col+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(2)+'%</small></div></div>';}).join('')||'<div class="krx-empty">보유 종목이 없습니다.</div>';
+  if($('kisBalSub'))$('kisBalSub').textContent=j.holdings.length+'종목 보유';
+}
+async function kisLog(){ const j=await kisFetch('/api/kis/log'); if(!j.ok||!$('kisLog'))return;
+  const rows=(j.log||[]).slice(-20).reverse();
+  $('kisLog').innerHTML=rows.map(l=>'<div class="tv-row"><span class="tv-rank">·</span><span><span class="tv-name">'+(l.kind||'')+'</span><span class="tv-sub">'+(l.name?l.name+' ':'')+(l.code||'')+(l.qty?' '+l.qty+'주':'')+(l.msg?' · '+l.msg:'')+(l.note?' · '+l.note:'')+(l.score!=null?' · 점수'+l.score:'')+'</span></span><span class="tv-val">'+String(l.t||'').slice(11,19)+'</span></div>').join('')||'<div class="tv-row"><span class="tv-rank">–</span><span class="tv-name">기록이 없습니다</span><span class="tv-val">--</span></div>';
+}
+if($('kisSave'))$('kisSave').onclick=async()=>{
+  const body={ pin:$('kisPin').value.trim()||undefined, appKey:$('kisAppKey').value.trim()||undefined, appSecret:$('kisAppSec').value.trim()||undefined,
+    account:$('kisAcct').value.trim()||undefined, product:$('kisProd').value.trim()||undefined, env:$('kisEnv').value,
+    dry:$('kisDry').checked, allowLive:$('kisAllow').checked };
+  if(body.pin) localStorage.setItem('kis_pin',body.pin);
+  const r=await fetch('/api/kis/setup',{method:'POST',headers:{'content-type':'application/json','x-trade-pin':kisPin()},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({ok:false,msg:'응답 오류'}));
+  kisMsg('kisMsg', j.ok?'저장했습니다.':(j.msg||'저장 실패'), j.ok);
+  if(j.ok) loadKis();
+};
+if($('kisReload'))$('kisReload').onclick=()=>loadKis();
+if($('kisBuy'))$('kisBuy').onclick=()=>kisOrder('buy');
+if($('kisSell'))$('kisSell').onclick=()=>kisOrder('sell');
+async function kisOrder(side){
+  const code=($('kisCode').value||'').trim(), qty=parseInt($('kisQty').value||'0',10);
+  if(!code||!qty){ kisMsg('kisOMsg','종목코드와 수량을 입력하세요.',false); return; }
+  if(!confirm((side==='buy'?'매수':'매도')+' '+code+' '+qty+'주를 실행할까요?'))return;
+  kisMsg('kisOMsg','주문 중…');
+  const j=await kisFetch('/api/kis/order?side='+side+'&code='+encodeURIComponent(code)+'&qty='+qty);
+  kisMsg('kisOMsg', j.ok?(j.dry?'DRY-RUN: 주문 미전송(설정만 기록)':'주문 접수됨'):(j.msg||'주문 실패'), j.ok);
+  loadKis();
+}
+if($('kisSaveAuto'))$('kisSaveAuto').onclick=async()=>{
+  const q='buyScoreMin='+$('kisScore').value+'&positionPct='+$('kisPos').value+'&maxHoldings='+$('kisMaxH').value+'&maxBuysPerDay='+$('kisMaxB').value+'&stopLossPct='+$('kisSL').value+'&takeProfitPct='+$('kisTP').value+'&requireVix30='+($('kisVix').checked?'1':'0');
+  const j=await kisFetch('/api/kis/auto?'+q); kisMsg('kisMsg', j.ok?'자동매매 설정을 저장했습니다.':(j.msg||'실패'), j.ok); loadKis();
+};
+if($('kisAuto'))$('kisAuto').onclick=async()=>{
+  const on=!($('kisAuto').getAttribute('aria-pressed')==='true');
+  if(on && !confirm('자동매매를 켤까요? 장 시간에 신호에 따라 자동으로 주문합니다.'))return;
+  const j=await kisFetch('/api/kis/auto?on='+(on?'1':'0')); if(j.ok)loadKis(); else kisMsg('kisMsg',j.msg||'실패',false);
+};
+if($('kisOnce'))$('kisOnce').onclick=async()=>{ kisMsg('kisMsg','점검 중…'); const j=await kisFetch('/api/kis/once'); kisMsg('kisMsg', j.ok?'1회 점검 완료':(j.msg||'실패'), j.ok); loadKis(); };
+window.onTabShown=function(t){ if(t==='live') loadKis(); };
 </script>
 </body>
 </html>
