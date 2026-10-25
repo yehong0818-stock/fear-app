@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>시장 체온 · 미국 증시 공포지수</title>
 <meta name="theme-color" id="metaTheme" content="#0D1322">
-<script>document.documentElement.dataset.theme=new URLSearchParams(location.search).get('theme')||(localStorage.getItem('theme')||'dark')</script>
+<script>if(localStorage.getItem('ye_design_version')!=='74'){localStorage.setItem('theme','light');localStorage.setItem('ye_design_version','74');}document.documentElement.dataset.theme=new URLSearchParams(location.search).get('theme')||(localStorage.getItem('theme')||'light')</script>
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon.svg">
 <link rel="apple-touch-icon" href="/icon.svg">
@@ -14,7 +14,7 @@
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <style>
 :root{
-  --frost:#E8EDF1; --card:#F7F9FB; --ink:#141B2D; --mute:#5E6878; --line:#CDD5DE;
+  --frost:#F5F5F0; --card:#FFFFFF; --ink:#222A25; --mute:#717970; --line:#E1E5DC; --action:#214E3B; --soft:#EDF2EB;
   --cold:#2A45E8; --cool:#6E8BF5; --mild:#9AA3AF; --warm:#F59A4A; --hot:#E8501A;
   --display:'Black Han Sans',sans-serif; --body:'Pretendard',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
 }
@@ -536,6 +536,107 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
 .ye-time-row input,.ye-time-row select{width:110px!important;min-height:34px!important;padding:6px 8px!important}
 .ye-time-row small{font-size:12px;color:var(--mute);margin-left:auto;white-space:nowrap}
 @media(max-width:520px){.ye-time-row{gap:8px}.ye-time-row input,.ye-time-row select{width:96px!important}.ye-time-row small{flex-basis:100%;margin-left:38px}.ye-time-row label{font-size:11px}}
+
+/* 아이폰 세로 화면: 여백은 작게, 조작 영역은 넉넉하게 */
+@media(max-width:480px){
+ body{padding:calc(12px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+ header{gap:8px;margin-bottom:14px;flex-wrap:wrap}.brand{font-size:20px}.hdr-r{flex-wrap:wrap;gap:6px}.stamp{font-size:11px;padding:6px 8px}
+ .tabs{gap:6px;padding:8px 0;top:0;scroll-padding-inline:8px}.tabs button{min-height:44px;padding:8px 13px;font-size:13px}
+ #liveSec{min-width:0}#liveSec>.panel{padding:14px;border-radius:12px}#liveSec h2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:22px}
+ #liveSec h2 small{flex-basis:100%;font-size:11px;line-height:1.5}#liveSec .env-badge{font-size:11px;white-space:normal;max-width:100%}
+ #liveSec .rec-h{align-items:flex-start;gap:10px;flex-wrap:wrap}#liveSec .rec-h>span{max-width:100%;flex-wrap:wrap}
+ #liveSec .btn{min-height:48px;padding:11px 15px;font-size:12px}#kisSave,#kisReload,#kisAuto,#kisOnce{min-width:116px}#liveSec input:not([type=checkbox]),#liveSec select{font-size:16px;min-height:44px;max-width:100%;min-width:0}
+ .ye-connect{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 10px}.ye-connect>label:nth-child(1),.ye-connect>label:nth-child(2),.ye-connect>label:nth-child(6){grid-column:1/-1}
+ .ye-connect label{font-size:12px;line-height:1.5}.ye-connect label.kis-chk{padding:10px;font-size:11px}
+ .ye-policy{padding:10px 12px;gap:5px 12px;font-size:11px}.ye-policy span{flex-basis:auto}.ye-policy b{flex-basis:100%}
+ .ye-group{padding:15px 0}.ye-group .ye-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px}.ye-group .ye-help{margin:4px 0 12px;font-size:11px}
+ .ye-fields label{font-size:11px;gap:5px}.ye-fields label:has(#kisMode),.ye-fields label:has(#kisSignal),.ye-fields label:has(#kisCombo),.ye-fields label:has(#kisStopAny){grid-column:1/-1}
+ .ye-time-row{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr);gap:8px 6px;padding:9px 0}
+ .ye-time-row label{min-width:0;flex-direction:column!important;align-items:stretch!important;gap:3px!important;white-space:normal}
+ .ye-time-row input,.ye-time-row select{width:100%!important;min-height:44px!important;padding:7px 5px!important;font-size:16px!important}
+ .ye-time-row small{grid-column:2/-1;margin:0;font-size:11px}.ye-time-row>b{font-size:12px}
+ #liveSec .symbar{display:grid;grid-template-columns:1fr 1fr;gap:10px}#liveSec .symbar input{width:100%!important}#liveSec .symbar #kisOMsg{grid-column:1/-1}
+ .ye-save{gap:10px;padding-top:14px}.ye-save #kisSaveAuto{width:100%;min-height:46px}.ye-advanced summary{padding:5px 0}.ye-advanced summary span{display:block;margin-left:0}
+ #liveSec .cbtwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}#liveSec .kis-warn{font-size:11px;line-height:1.7}#liveSec .kq-row{gap:8px}#liveSec .kq-nm{overflow-wrap:anywhere}
+}
+
+/* 참고 이미지: 따뜻한 배경, 흰 카드, 짙은 녹색 주요 버튼 */
+html:not([data-theme="dark"]) .panel{border-color:var(--line);box-shadow:0 3px 16px rgba(39,56,43,.035);border-radius:16px}
+html:not([data-theme="dark"]) .tabs button{background:transparent;border-color:transparent;color:var(--mute);font-family:var(--body);font-weight:700}
+html:not([data-theme="dark"]) .tabs button[aria-pressed="true"]{background:var(--action);color:#FFFFFF;border-color:var(--action)}
+html:not([data-theme="dark"]) #liveSec h2{font-family:var(--body);font-weight:800;letter-spacing:-.5px}
+html:not([data-theme="dark"]) #liveSec .rec-h>b{font-size:15px;font-weight:750}
+html:not([data-theme="dark"]) #liveSec input:not([type=checkbox]),html:not([data-theme="dark"]) #liveSec select{background:#F8F9F6;border:1px solid var(--line);border-radius:9px;color:var(--ink);font-family:var(--body)}
+html:not([data-theme="dark"]) #liveSec input::placeholder{color:#92998F;font-size:12px}
+html:not([data-theme="dark"]) #liveSec .btn{border:1px solid #D5DDD2;border-radius:10px;background:#FFFFFF;color:var(--action);font-weight:700}
+html:not([data-theme="dark"]) #kisSave,html:not([data-theme="dark"]) #kisAuto,html:not([data-theme="dark"]) .ye-save #kisSaveAuto{background:var(--action);color:#FFFFFF;border-color:var(--action)}
+html:not([data-theme="dark"]) #kisBuy{background:#FBEDEC!important;color:#B8453D!important;border-color:#F3DCD7!important}
+html:not([data-theme="dark"]) #kisSell{background:#EAF0FA!important;color:#356398!important;border-color:#D9E3F1!important}
+html:not([data-theme="dark"]) .ye-policy{background:var(--soft);border-color:#DCE5D8;border-radius:12px;color:#5D705F}
+html:not([data-theme="dark"]) .ye-policy b{color:var(--action)}
+html:not([data-theme="dark"]) .env-demo{background:#EAF1E8;color:#41624A;border-color:#D5E1D1}
+html:not([data-theme="dark"]) .ye-connect label.kis-chk{background:#F8F9F6}
+html:not([data-theme="dark"]) #liveSec input[type=checkbox]{accent-color:var(--action)}
+html:not([data-theme="dark"]) .ye-group h3{color:var(--action)}
+html:not([data-theme="dark"]) .ye-group{border-bottom-color:#EBEEE7}
+html:not([data-theme="dark"]) .ye-advanced{border-top-color:#EBEEE7}
+html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color:#EDE2CE;color:#78694D;border-radius:10px}
+@media(max-width:480px){html:not([data-theme="dark"]) #liveSec>.panel{border-radius:16px;padding:15px}}
+
+/* 노트북: 왼쪽 탐색 + 주문/설정과 보유/기록의 작업 공간 */
+@media(min-width:1100px){
+ body{max-width:1680px;padding:24px 28px 64px 236px}
+ body>header{margin-bottom:26px;border-bottom:1px solid var(--line);padding-bottom:18px}
+ .tabs{position:fixed;inset:0 auto 0 0;width:208px;height:100dvh;display:flex;flex-direction:column;gap:7px;padding:32px 16px;margin:0;border:0;border-right:1px solid var(--line);background:var(--soft,var(--frost));overflow-y:auto;overflow-x:hidden;z-index:70}
+ .tabs:before{content:'YE 매매 데스크';font-family:var(--body);font-size:18px;font-weight:800;line-height:1.5;letter-spacing:-.5px;padding:0 12px 34px;color:var(--ink)}
+ .tabs:after{content:'모든 주문은 현재 계좌와 주문 전송 설정을 따릅니다.';font:11px/1.8 var(--body);color:var(--mute);padding:20px 12px;margin-top:auto;border-top:1px solid var(--line)}
+ .tabs button{width:100%;min-height:46px;border-radius:10px;text-align:left;padding:12px 15px;flex:0 0 auto;font-family:var(--body)}
+ #liveSec:not(.hidden){display:grid;grid-template-columns:minmax(360px,.92fr) minmax(400px,1.18fr);gap:18px;align-items:start}
+ #liveSec>h2{grid-column:1/-1;grid-row:1;display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:0;font-size:28px}
+ #liveSec>h2 small{flex-basis:100%;font-size:12px;margin:0;color:var(--mute)}
+ #liveSec>.ye-policy{grid-column:1/-1;grid-row:2;margin:0;padding:12px 16px}
+ #liveSec>.ye-desk-order{grid-column:1;grid-row:3;margin:0!important;min-width:0}
+ #liveSec>.ye-desk-balance{grid-column:2;grid-row:3;margin:0!important;min-width:0;min-height:180px}
+ #liveSec>.ye-desk-auto{grid-column:1;grid-row:4;margin:0!important;min-width:0}
+ #liveSec>.ye-desk-journal{grid-column:2;grid-row:4;margin:0!important;min-width:0}
+ #liveSec>.ye-desk-connect{grid-column:1/-1;grid-row:5;margin:0!important}
+ #liveSec>.panel{padding:22px}
+ #liveSec .rec-h{align-items:flex-start;flex-wrap:wrap;gap:12px}#liveSec .rec-h>span{flex-wrap:wrap;max-width:100%}
+ #liveSec .ye-group{display:block;padding:17px 0}#liveSec .ye-group .ye-help{margin:4px 0 12px}
+ #liveSec .ye-group .ye-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ #liveSec .ye-fields label:has(#kisMode),#liveSec .ye-fields label:has(#kisSignal){grid-column:1/-1}
+ #liveSec .symbar{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end}#liveSec .symbar input{width:100%!important}#liveSec .symbar #kisOMsg{grid-column:1/-1}
+ #liveSec input:not([type=checkbox]),#liveSec select{min-height:40px;min-width:0;max-width:100%}
+ #liveSec .cbtwrap{max-width:100%;overflow-x:auto}#liveSec .ye-save #kisSaveAuto{width:100%}
+ #liveSec .ye-time-row{gap:8px;flex-wrap:wrap}#liveSec .ye-time-row input{width:138px!important}#liveSec .ye-time-row select{width:84px!important}
+ #liveSec .ye-time-row small{flex-basis:100%;margin-left:38px}
+ #liveSec .ye-connect{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #liveSec .kq-row,#liveSec .tv-row{min-width:0}#liveSec .kq-nm{overflow-wrap:anywhere}
+}
+
+/* 휴대전화·작은 창: 설명 열 제거, 필드 중심의 압축형 설정 */
+@media(max-width:1099px){
+ #liveSec .ye-desk-auto .ye-group{display:block;padding:12px 0}
+ #liveSec .ye-desk-auto .ye-group>h3{font-size:13px;margin:0 0 10px}
+ #liveSec .ye-desk-auto .ye-group>.ye-help{display:none}
+ #liveSec .ye-desk-auto .ye-group .ye-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px}
+ #liveSec .ye-desk-auto .ye-settings{margin:4px 0}
+ #liveSec .ye-desk-auto .ye-fields label{font-size:11px;gap:4px;line-height:1.5}
+ #liveSec .ye-desk-auto .ye-fields label:has(#kisMode),#liveSec .ye-desk-auto .ye-fields label:has(#kisSignal){grid-column:auto}
+ #liveSec .ye-desk-auto .ye-fields label:has(#kisStopAny){grid-column:1/-1;min-height:32px}
+ #liveSec .ye-desk-auto .ye-fields input:not([type=checkbox]),#liveSec .ye-desk-auto .ye-fields select{padding:8px;min-height:44px}
+ #liveSec .ye-desk-auto>.rec-h{gap:8px;margin-bottom:8px}
+ #liveSec .ye-desk-auto>.rec-h>span{width:100%;gap:6px!important}
+ #liveSec .ye-desk-auto #kisAuto,#liveSec .ye-desk-auto #kisOnce{min-width:0;min-height:44px;padding:8px 12px}
+ #liveSec .ye-desk-auto .ye-time-row{padding:5px 0;gap:6px;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr)}
+ #liveSec .ye-desk-auto .ye-time-row small{font-size:10px;line-height:1.4}
+ #liveSec .ye-desk-auto .ye-advanced{margin-top:0;padding:9px 0}
+ #liveSec .ye-desk-auto .ye-advanced summary{font-size:12px;padding:2px 0}
+ #liveSec .ye-desk-auto .ye-advanced summary span{display:none}
+ #liveSec .ye-desk-auto .ye-save{padding:10px 0 0;gap:8px}
+ #liveSec .ye-desk-auto .ye-save #kisExpo{font-size:11px}
+ #liveSec .ye-desk-auto{padding:12px!important}
+}
 </style>
 </head>
 <body>
@@ -549,13 +650,13 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
 
 <div class="err" id="err"></div>
 <nav class="tabs" id="tabs" role="tablist" aria-label="화면 구분">
+  <button type="button" data-t="live">YE 매매</button>
   <button type="button" data-t="over" aria-pressed="true">개요</button>
   <button type="button" data-t="rec">추천·신호</button>
   <button type="button" data-t="kr">주식</button>
   <button type="button" data-t="coin">코인</button>
   <button type="button" data-t="quote">시세·비교</button>
   <button type="button" data-t="corr">상관</button>
-  <button type="button" data-t="live">YE 매매</button>
 </nav>
 
 <section class="favbar" id="favSec">
@@ -914,7 +1015,7 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
   <h2>YE 매매 <span id="kisEnvBadge" class="env-badge env-demo">모의투자 계좌</span> <small id="kisSub">한국투자증권 KIS · PIN 보호 · 기본은 모의투자</small></h2>
 
 <div class="ye-policy"><b>보유형 매매</b><span>오전·오후 조건 매매</span><span>장중 상시 손절</span><span>당일 강제청산 없음</span></div>
-  <div class="panel" style="margin-bottom:10px">
+  <div class="panel ye-desk-connect" style="margin-bottom:10px">
     <div class="rec-h"><b>KIS 연결 설정</b><span id="kisState" class="note" style="border:0;padding:0;margin:0"></span></div>
     <p class="ye-help">항목명을 보고 입력하세요. 실전·모의 여부와 주문 전송 여부는 별개입니다.</p><div class="kis-grid ye-connect">
       <label>앱 키<input id="kisAppKey" placeholder="발급받은 앱 키" autocomplete="off"></label>
@@ -934,13 +1035,13 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
     <p class="kis-warn">PIN을 모르면 주문할 수 없습니다. <b>실전 주문은 ①환경=실전 ②DRY-RUN 해제 ③'실전 주문 허용' 세 가지가 모두</b> 갖춰져야 나갑니다. 기본값은 모의투자 + DRY-RUN이라 실제 주문이 나가지 않습니다. 투자 판단과 손실의 책임은 사용자에게 있습니다.</p>
   </div>
 
-  <div class="panel" style="margin-bottom:10px">
+  <div class="panel ye-desk-balance" style="margin-bottom:10px">
     <div class="rec-h"><b>계좌 현황</b><span id="kisBalSub" class="note" style="border:0;padding:0;margin:0"></span></div>
     <div class="krx-main" id="kisBal"></div>
     <div class="kq-res" id="kisHold"></div>
   </div>
 
-  <div class="panel" style="margin-bottom:10px">
+  <div class="panel ye-desk-order" style="margin-bottom:10px">
     <div class="rec-h"><b>수동 주문</b><span class="note" style="border:0;padding:0;margin:0">1건 즉시</span></div>
     <div class="symbar"><label class="ye-order-label">종목코드<input id="kisCode" placeholder="예: 005930" style="width:180px"></label><label class="ye-order-label">주문 수량 · 주<input id="kisQty" type="number" min="1" value="1" style="width:100px"></label>
       <button class="btn sm" id="kisBuy" style="background:var(--hot);color:#fff;border-color:var(--hot)">매수</button>
@@ -949,7 +1050,7 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
     </div>
   </div>
 
-  <div class="panel">
+  <div class="panel ye-desk-auto">
     <div class="rec-h"><b>자동매매</b>
       <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="btn sm" id="kisAuto" aria-pressed="false">자동매매 켜기</button><button class="btn sm" id="kisOnce">1회 점검</button><span id="kisAutoSub" class="note" style="border:0;padding:0;margin:0"></span><span id="kisAutoEnv" class="env-badge env-demo">모의투자 계좌</span></span></div>
 <div class="ye-settings"><section class="ye-group"><h3>매매 전략</h3><p class="ye-help">오후 매수 후 다음날 보유 가능 · 당일 강제청산 없음</p><div class="ye-fields"><label>매매 방식<select id="kisMode"><option value="swing">보유형 · 다음날 보유 가능</option><option value="short">단기(1~5거래일)</option><option value="combo">단타 조합(검증 통과 기법)</option></select></label><label>매수 신호<select id="kisSignal"><option value="score">점수 합산</option><option value="trend">추세·모멘텀 상위</option><option value="box">1분봉 박스권 지지/저항</option></select></label><label>최대 보유일 · 0은 제한 없음<input id="kisHoldDays" type="number" step="1" min="0" max="60" value="0"></label><label class="kis-combo">단타 조합<select id="kisCombo"><option value="r2m">RSI2 눌림목 + 코스피 필터 (추천)</option><option value="h">RSI2(필터) + IBS 저점 반등</option><option value="r2">RSI2 눌림목 (필터 없음)</option></select></label></div></section><section class="ye-group"><h3>투자 한도</h3><p class="ye-help">한 종목에 쓸 금액과 전체 보유 한도입니다.</p><div class="ye-fields"><label>종목당 투자 비중 · %<input id="kisPos" type="number" step="1" value="10"></label><label>최대 보유 종목 수<input id="kisMaxH" type="number" step="1" value="5"></label><label>하루 매수 횟수<input id="kisMaxB" type="number" step="1" value="3"></label></div></section><section class="ye-group"><h3>손익 관리</h3><p class="ye-help">손절은 손실 제한, 익절은 수익 실현 기준입니다.</p><div class="ye-fields"><label>손절 기준 · %<input id="kisSL" type="number" step="1" value="-3"></label><label>익절 기준 · % (0은 해제)<input id="kisTP" type="number" step="1" value="10"></label><label class="kis-chk"><input type="checkbox" id="kisStopAny" checked> 장중 상시 손절</label></div></section><section class="ye-group"><h3>매매 시간</h3><p class="ye-help">오전은 시작 시각부터, 오후는 장 마감 15:30에서 거꾸로 계산합니다.</p><div class="ye-fields"><div class="ye-time-compact"><div class="ye-time-row"><b>오전</b><label><span>시작</span><input id="kisDayFrom" type="time" min="09:00" max="15:30" value="09:00"></label><label><span>동안</span><select id="kisMorningMinutes"><option value="5">5분</option><option value="10">10분</option><option value="15">15분</option><option value="20">20분</option><option value="30" selected>30분</option><option value="45">45분</option><option value="60">60분</option><option value="90">90분</option><option value="120">120분</option><option value="180">180분</option></select></label><small id="kisMorningEnd">09:00~09:30</small></div><div class="ye-time-row"><b>오후</b><label><span>장 마감 전</span><select id="kisAfternoonMinutes"><option value="5">5분</option><option value="10">10분</option><option value="15">15분</option><option value="20">20분</option><option value="30" selected>30분</option><option value="45">45분</option><option value="60">60분</option><option value="90">90분</option><option value="120">120분</option><option value="180">180분</option></select></label><small id="kisAfternoonEnd">15:00~15:30</small></div></div></div></section></div><details class="ye-advanced"><summary>고급 설정 <span>매수 필터·뉴스·반복 손실 제외</span></summary><div class="ye-settings"><section class="ye-group"><h3>매수 필터</h3><p class="ye-help">점수·장세·과매도 조건을 추가할 때만 조절하세요.</p><div class="ye-fields"><label>매수 임계점수<input id="kisScore" type="number" step="1" value="3"></label><label>장세 필터(신규 매수)<select id="kisRegime"><option value="off">끔</option><option value="basic">코스피 20일선 위</option><option value="strong">20일선 위 + 상승</option></select></label><label class="kis-chk"><input type="checkbox" id="kisVix"> VIX 30 이상만 매수</label><label class="kis-chk"><input type="checkbox" id="kisRsiBuy"> RSI 과매도 매수 <span class="lbl" id="kisRsiState"></span></label><label>RSI 기준(미만)<input id="kisRsiMax" type="number" step="1" value="30"></label></div></section><section class="ye-group"><h3>뉴스와 반복 손실</h3><p class="ye-help">기사 수는 사실검증이 아닙니다. 반복 손실 제외 기준은 함께 설정하세요.</p><div class="ye-fields"><label>뉴스 최소 건수(0=끔)<input id="kisNews" type="number" step="1" min="0" max="20" value="2"></label><label class="kis-chk"><input type="checkbox" id="kisSkipLosers"> 손실 반복 종목 제외</label><label>제외 기준(매도 횟수)<input id="kisLoserMin" type="number" step="1" value="2"></label><label>제외 기간(일)<input id="kisLoserDays" type="number" step="1" value="30"></label></div></section><section class="ye-group"><h3>기존 전략 보조 설정</h3><p class="ye-help">단타 조합의 실제 실행 시간은 위의 오전·오후 구간을 따릅니다.</p><div class="ye-fields"><label class="kis-combo">종가 매매 시작<input id="kisComboFrom" type="time" value="15:10"></label><label class="kis-combo">종가 매매 마감<input id="kisComboTo" type="time" value="15:18"></label></div></section></div><button class="btn sm" id="kisSwingPreset" style="align-self:end" title="백테스트 결과 기반 추천값을 입력칸에 채웁니다(저장은 따로)">스윙 20일 추천값 채우기</button></details><div class="ye-save"><span class="lbl" id="kisExpo" style="align-self:end"></span><button class="btn sm" id="kisSaveAuto" style="align-self:end">자동매매 설정 저장</button></div><details class="ye-advanced"><summary>매매 방식 설명과 주의사항</summary><p class="lbl" id="kisModeNote"></p></details>
@@ -957,7 +1058,7 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
 <details class="ye-advanced"><summary>자동매매 작동 원리</summary>    <p class="note" style="border:0;margin:10px 0 0;padding:0">자동매매는 앱 서버가 켜져 있는 동안에만 동작합니다. 신호는 전 종목 스캔을 쓰며 <b>골든크로스는 보완 조건(20·60·120일선 우상향 + 거래대금 상위 + 5일선이 20일선 이탈했지만 60일선이 지지)을 모두 통과한 종목만</b> 인정됩니다. 뉴스 트래픽(최근 2일 구글뉴스 기사 수)은 07:00~11:30 사이 1시간 간격 수집해 최소 건수 이상인 종목만 매수하고, 많이 언급된 종목에 가점을 줍니다. 임계점수 이상이면 매수하고 손절·익절·보유 기간 규칙으로 자동 매도합니다. 기간 청산은 앱 매매일지에 매수 기록이 있는 종목에만 적용됩니다(직접 산 종목은 손절·익절만). 장 시간(09:00~15:30)에만 주문합니다. 자동매매는 <b>09:00~09:30과 15:00~15:30 두 구간 모두 매수·매도</b>합니다. 그 외 장중에는 상시 손절을 켠 경우 손절만 확인합니다. 단타 조합은 오전·오후 시간대별 1회 조건을 평가합니다. 기사 건수 필터는 뉴스 사실검증이 아닙니다. 매수 신호를 「1분봉 박스권 지지/저항」으로 바꾸면 박스권 지지 반등 종목을 사고 보유 중 저항 하락 시 익절합니다. 지금 연결된 계좌가 실전인지 모의인지는 화면 위쪽의 <b>실전 계좌/모의투자 계좌 배지</b>로 확인하고, 실전 계좌를 저장할 때는 확인창이 뜹니다.</p></details>
   </div>
 
-  <div class="panel" style="margin-top:10px">
+  <div class="panel ye-desk-journal" style="margin-top:10px">
     <div class="rec-h"><b>매매일지</b>
       <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
         <button class="btn sm" id="jnNotify" aria-pressed="false">매매 알림 켜기</button>
@@ -1458,7 +1559,7 @@ function renderRec(){
   function applyTheme(t){
     document.documentElement.dataset.theme=t;localStorage.setItem('theme',t);
     const b=document.getElementById('themeBtn');if(b)b.textContent=t==='dark'?'☀ 라이트':'🌙 다크';
-    if(mt)mt.content=t==='dark'?'#0D1322':'#E8EDF1';
+    if(mt)mt.content=t==='dark'?'#0D1322':'#F5F5F0';
     if(typeof FNG!=='undefined'&&FNG)renderFng();if(typeof renderSignal==='function')renderSignal();
     if(typeof VIX!=='undefined'&&VIX)renderVix();if(typeof BTC!=='undefined'&&BTC)renderBtc();
     if(typeof KR!=='undefined'&&KR)renderKr();if(typeof QUOTES!=='undefined'&&QUOTES)renderQuotes();
