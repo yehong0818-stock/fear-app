@@ -246,4 +246,4 @@ async function liveSignals(uni, fresh, k) {
   return { fresh: !!fresh, basis: fresh ? today + ' 장중(약 15~20분 지연)' : H.dates[base] + ' 종가', kospi: { last: +kc[kc.length - 1].toFixed(2), ma20: km20 && +km20.toFixed(2), above20: mkt20 },
     r2: r2.slice(0, 15), r2Blocked: !mkt20, ibs: ibs.slice(0, 15), on: on.slice(0, 15), ma5, priced: rows.length, at: new Date().toISOString() };
 }
-module.exports = { backtest, liveTargets, liveSignals, TECH, COMBOS };
+module.exports = { backtest, liveTargets, liveSignals, load, TECH, COMBOS };

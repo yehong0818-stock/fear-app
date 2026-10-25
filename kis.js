@@ -11,6 +11,8 @@
 const fs = require('fs');
 const path = require('path');
 const J = require('./journal.js');
+const GCBT = require('./gcbt.js');
+const MB = require('./minbox.js');
 
 const CFG_PATH = path.join(__dirname, 'kis-config.json');
 const LOG_FILE = path.join(__dirname, 'autotrade-log.jsonl');
@@ -19,18 +21,22 @@ const DEFAULTS = {
   env: 'demo', appKey: '', appSecret: '', account: '', product: '01',
   pin: '', dry: true, allowLive: false, orderType: 'market', excgId: 'KRX',
   auto: { on: false, buyScoreMin: 3, requireVix30: false, positionPct: 10,
-    maxHoldings: 5, maxBuysPerDay: 3, stopLossPct: -5, takeProfitPct: 10,
+    maxHoldings: 5, maxBuysPerDay: 3, stopLossPct: -3, takeProfitPct: 10,
     loopSeconds: 60, universeTop: 200, maxCandidates: 5,
     skipLosers: false, loserMinSells: 2, loserBlockDays: 30,
     mode: 'swing', holdDays: 0, rsiBuy: false, rsiMax: 30, signal: 'score', regime: 'off',
-    dayEntryFrom: '09:05', dayEntryTo: '14:30', dayExitAt: '15:15',
-    combo: 'r2m', comboFrom: '15:10', comboTo: '15:18' },
+    dayEntryFrom: '09:00', dayEntryTo: '09:30', dayExitAt: '15:00', morningMinutes: 30, afternoonMinutes: 30, stopAnytime: 1,
+    combo: 'r2m', comboFrom: '15:10', comboTo: '15:18', newsMin: 2 },
 };
 let C = JSON.parse(JSON.stringify(DEFAULTS));
 try {
   const j = JSON.parse(fs.readFileSync(CFG_PATH, 'utf8'));
   Object.assign(C, j); C.auto = Object.assign({}, DEFAULTS.auto, j.auto || {});
+  if (j.auto && j.auto.morningMinutes == null) C.auto.morningMinutes = Math.max(1, hm(C.auto.dayEntryTo) - hm(C.auto.dayEntryFrom));
+  if (j.auto && j.auto.afternoonMinutes == null) C.auto.afternoonMinutes = Math.max(1, hm('15:30') - hm(C.auto.dayExitAt));
 } catch (e) {}
+// 기존 당일 방식도 보유형으로 전환. 계좌·주문 허용 설정은 유지.
+if (C.auto.mode === 'day') C.auto.mode = 'swing';
 // 환경변수가 있으면 그 값이 우선 (파일에는 저장하지 않음)
 if (process.env.KIS_APP_KEY) C.appKey = process.env.KIS_APP_KEY;
 if (process.env.KIS_APP_SECRET) C.appSecret = process.env.KIS_APP_SECRET;
@@ -40,6 +46,12 @@ if (process.env.KIS_ENV) C.env = process.env.KIS_ENV;
 if (process.env.TRADE_PIN) C.pin = process.env.TRADE_PIN;
 
 function save() { try { fs.writeFileSync(CFG_PATH, JSON.stringify(C, null, 2)); } catch (e) {} }
+
+// ── 캐시·종목 유니버스(server.js에서 주입) ──────────
+const MEMCACHE = new Map();
+async function cached(key, fn, ttl) { const c = MEMCACHE.get(key); if (c && Date.now() - c.t < (ttl || 60e3)) return c.data; const v = await fn(); MEMCACHE.set(key, { t: Date.now(), data: v }); return v; }
+let UNIVERSE_GET = null;
+function setUniverse(fn) { UNIVERSE_GET = fn; }
 
 let PORT = process.env.PORT || 8080;
 function init(p) { PORT = p || PORT; }
@@ -156,16 +168,29 @@ async function order(side, code, qty, meta) {
 
 // ── 신호 → 후보 ─────────────────────────────
 async function signals() {
-  const r = await fetch(`http://127.0.0.1:${PORT}/api/krxscan`);
-  const j = await r.json();
+  const to = (p, ms) => Promise.race([p, new Promise(res => setTimeout(() => res(null), ms))]); // 준비 중이면 기존 방식으로 fallback
+  const [r, g, n] = await Promise.all([
+    fetch(`http://127.0.0.1:${PORT}/api/krxscan`).then(x => x.json()),
+    to(fetch(`http://127.0.0.1:${PORT}/api/gcstrict`).then(x => x.json()).catch(() => null), 25000),
+    fetch(`http://127.0.0.1:${PORT}/api/newsheat`).then(x => x.json()).catch(() => null),
+  ]);
+  const j = r;
   if (j.loading) throw new Error('앱이 전 종목 스캔을 계산 중입니다.');
+  j.gcStrict = g && !g.error && !g.loading ? g : null;
+  j.news = n || null;
   if ((C.auto.regime || 'off') !== 'off') { try { j.kospi = await (await fetch(`http://127.0.0.1:${PORT}/api/kospireg`)).json(); } catch (e) { j.kospi = { ok: false }; } }
   return j;
 }
 function candidates(sig) {
   const A = C.auto, W = { gc: 2, hm: 2, rsiO: 1, rsiW: 1, top: 1 };
   const map = {};
-  (sig.turning || []).forEach(x => { (map[x.code] = map[x.code] || { ...x }).gc = true; });
+  const gcl = (sig.gcStrict && sig.gcStrict.list) || [];
+  if (gcl.length) {
+    // 보완 골든크로스: 20·60·120일선 우상향 + 거래대금 상위 + 5일선 20일선 이탈·60일선 지지
+    gcl.forEach(x => { (map[x.code] = map[x.code] || { ...x }).gcs = true; });
+  } else {
+    (sig.turning || []).forEach(x => { (map[x.code] = map[x.code] || { ...x }).gc = true; }); // 보완 목록 미준비 → 기존 방식
+  }
   (sig.hammer || []).forEach(x => { (map[x.code] = map[x.code] || { ...x }).hm = true; });
   let rows = Object.values(map);
   const byVal = [...rows].sort((a, b) => (b.trdval || 0) - (a.trdval || 0));
@@ -180,12 +205,21 @@ function candidates(sig) {
   }
   rows.forEach(x => {
     let s = 0; const why = [];
-    if (x.gc) { s += W.gc; why.push('골든크로스'); }
+    if (x.gcs) { s += W.gc; why.push('골든크로스(보완: 20·60·120일선 우상향·60일선 지지)'); }
+    else if (x.gc) { s += W.gc; why.push('골든크로스(기존)'); }
     if (x.hm) { s += W.hm; why.push('망치형'); }
+    const nn = (sig.news && sig.news.counts && sig.news.counts[x.code]) || 0;
+    x._news = nn; if (nn > 0) why.push('뉴스 ' + nn + '건');
+    if (A.newsMin > 0 && nn >= Math.max(A.newsMin * 3, 6)) s += 1;
     if (x.rsi != null && x.rsi < 30) { s += W.rsiO; why.push('RSI' + x.rsi); } else if (x.rsi != null && x.rsi <= 50) { s += W.rsiW; why.push('RSI' + x.rsi); }
     if (topN.has(x.code)) { s += W.top; why.push('거래대금'); }
     x._s = s; x._why = why;
   });
+  if (A.newsMin > 0) {
+    // 뉴스 트래픽 필터: 07:00~11:30 시간별 수집 데이터 기준, 최소 건수 미만은 제외
+    if (!sig.news || !sig.news.at) return { list: [], note: '뉴스 트래픽 데이터가 아직 수집되지 않았습니다(07:00~11:30 시간별) → 매수 보류' };
+    rows = rows.filter(x => x._news >= A.newsMin);
+  }
   let rsiRows = [];
   if (A.rsiBuy && rsiAllowed(A)) {
     // RSI<기준 종목은 점수와 무관하게 후보(거래대금 상위 universeTop 안에서, 레버리지·인버스·우선주 제외)
@@ -197,20 +231,21 @@ function candidates(sig) {
     rows = (sig.trendTop || []).filter(x => (x.trdRank || 1e9) <= (A.universeTop || 200) && !/레버리지|인버스|우$|우B$/.test(x.name || ''))
       .map(x => ({ ...x, _s: A.buyScoreMin, _why: ['추세·모멘텀', '1주 +' + x.mom5 + '%', '거래대금 ' + x.trdRank + '위'] }));
   } else rows = rows.filter(x => x._s >= A.buyScoreMin);
-  if ((A.signal || 'score') !== 'trend') rows = rows.sort((a, b) => b._s - a._s || (b.trdval || 0) - (a.trdval || 0));
+  if ((A.signal || 'score') !== 'trend') rows = rows.sort((a, b) => b._s - a._s || b._news - a._news || (b.trdval || 0) - (a.trdval || 0));
   const seen = new Set(), list = [];
   rsiRows.concat(rows).forEach(x => { if (!seen.has(x.code) && list.length < A.maxCandidates) { seen.add(x.code); list.push(x); } });
   const sn = (A.signal || 'score') === 'trend' ? '추세·모멘텀 ' : '점수 ';
+  const nn = A.newsMin > 0 ? ` · 뉴스≥${A.newsMin}건` : '';
   const rn = A.rsiBuy ? (rsiAllowed(A) ? ` · RSI 후보 ${rsiRows.length}` : ' · RSI 매수 꺼짐(10~20일 보유일 때만)') : '';
-  return { list, note: `${rows.length}개 ${sn}후보${rn}` };
+  return { list, note: `${rows.length}개 ${sn}후보${rn}${nn}` };
 }
 // ── 매매 방식 ───────────────────────────────
-//  swing: 기존(손절·익절, holdDays>0 이면 기간 청산)  short: 단기(최대 holdDays 거래일)  day: 당일(장 마감 전 전량 청산)
+//  swing: 기존(손절·익절, holdDays>0 이면 기간 청산)  short: 단기(최대 holdDays 거래일)  day: 당일(장 시작 30분에만 진입, 마감 30분 전부터 전량 청산)
 const MODE_PRESET = {
-  swing: { stopLossPct: -5, takeProfitPct: 10, holdDays: 0, signal: 'score' },
+  swing: { stopLossPct: -3, takeProfitPct: 10, holdDays: 0, signal: 'score' },
   short: { stopLossPct: -3, takeProfitPct: 4, holdDays: 3, signal: 'trend' },
-  day:   { stopLossPct: -1.5, takeProfitPct: 2, holdDays: 0, signal: 'trend' },
-  combo: { stopLossPct: 0, takeProfitPct: 0, holdDays: 0, signal: 'score' },
+  day:   { stopLossPct: -3, takeProfitPct: 2, holdDays: 0, signal: 'trend' },
+  combo: { stopLossPct: -3, takeProfitPct: 0, holdDays: 0, signal: 'score' },
 };
 // ── 단타 조합(백테스트 검증 통과 기법) ─────────
 //  r2m : RSI2 눌림목 + 코스피 20일선 위   (종가 매수 → 종가가 5일선 위 또는 5거래일 → 종가 매도)
@@ -221,11 +256,12 @@ const BAD_NAME = /레버리지|인버스|우$|우B$|스팩|리츠/;
 let comboDay = '';
 async function comboTick(A, bal, now) {
   const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
-  if (now < hm(A.comboFrom) || now > hm(A.comboTo)) { log({ kind: 'auto_wait', msg: `단타 조합: 종가 매매 시간(${A.comboFrom}~${A.comboTo}) 대기` }); return; }
-  if (comboDay === today) return; // 하루 1회
+  if (!tradeWindow(A, now)) return;
+  const session = today + (now < hm('12:00') ? ':am' : ':pm');
+  if (comboDay === session) return; // 시간대별 1회
   const r = await fetch(`http://127.0.0.1:${PORT}/api/shortlive?fresh=1`); const sg = await r.json();
   if (sg.error || !sg.priced) { log({ kind: 'auto_error', msg: '단타 조합: 장중 시세를 받지 못함 ' + (sg.error || '') }); return; }
-  comboDay = today;
+  comboDay = session;
   const cfg = COMBO[A.combo] || COMBO.r2m, maxH = Math.max(1, A.maxHoldings || 5);
   const slots = cfg.parts.length === 2 ? { [cfg.parts[0]]: Math.ceil(maxH / 2), [cfg.parts[1]]: Math.floor(maxH / 2) } : { [cfg.parts[0]]: maxH };
   // 1) 청산: 앱이 이 전략 태그로 산 종목만
@@ -261,6 +297,15 @@ async function comboTick(A, bal, now) {
 function rsiAllowed(A) { A = A || C.auto; return (A.mode || 'swing') === 'swing' && A.holdDays >= 10 && A.holdDays <= 20; }
 function kstNow() { return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })); }
 function hm(s) { const [h, m] = String(s || '0:0').split(':').map(Number); return h * 60 + (m || 0); }
+function sessionWindows(A) {
+  const am = hm(A.dayEntryFrom || '09:00');
+  const duration = (n, fallback) => Number.isFinite(Number(n)) && Number(n) > 0 ? Number(n) : fallback;
+  return [[am, Math.min(930, am + duration(A.morningMinutes, Math.max(1, hm(A.dayEntryTo || '09:30') - am)))],
+    [Math.max(540, 930 - duration(A.afternoonMinutes, 30)), 930]];
+}
+function tradeWindow(A, now) {
+  return now >= 540 && now <= 930 && sessionWindows(A).some(([from, to]) => now >= from && now <= to);
+}
 function kstMin() { const d = kstNow(); return d.getHours() * 60 + d.getMinutes(); }
 /** 평일 기준 경과 거래일(공휴일 미반영) */
 function bizDaysSince(iso) {
@@ -274,6 +319,7 @@ function inHours() {
   if (d.getDay() === 0 || d.getDay() === 6) return false;
   const m = d.getHours() * 60 + d.getMinutes(); return m >= 9 * 60 && m <= 15 * 60 + 30;
 }
+async function boxScanCodes(codes) { const m = {}; (await MB.scan(codes || [], {})).forEach(b => { m[b.code] = b; }); return m; }
 let state = { day: '', buys: 0 };
 let running = false;
 async function autoTick() {
@@ -287,22 +333,37 @@ async function autoTick() {
     const bal = await balance();
     if (mode === 'combo') {
       // 단타 조합: 손절(설정 시)만 장중 확인, 나머지는 종가 매매 시간에 일괄 처리
-      if (A.stopLossPct < 0) for (const h of bal.holdings) if (J.holdTag(h.code) && h.pnlPct <= A.stopLossPct) { await order('sell', h.code, h.qty, { reason: '자동 손절 ' + h.pnlPct + '%', src: 'auto', tag: J.holdTag(h.code), bt: h.price || null }); }
+      if (A.stopLossPct < 0 && (A.stopAnytime == 1 || tradeWindow(A, now))) for (const h of bal.holdings) if (J.holdTag(h.code) && h.pnlPct <= A.stopLossPct) { await order('sell', h.code, h.qty, { reason: '자동 손절 ' + h.pnlPct + '%', src: 'auto', tag: J.holdTag(h.code), bt: h.price || null }); }
       await comboTick(A, bal, now); return;
     }
     const sold = new Set();
+    const inExit = tradeWindow(A, now); // 두 구간 모두 매수·매도 허용
+    const stopWin = A.stopAnytime == 1 || inExit; // 손절만 장중 상시 확인 옵션(stopAnytime=1)
+    const boxMap = A.signal === 'box' && bal.holdings.length ? await boxScanCodes(bal.holdings.map(h => h.code)) : null;
     for (const h of bal.holdings) {
       const days = bizDaysSince(J.heldSince(h.code));
       const auto = J.heldSince(h.code) != null; // 앱 일지에 매수 기록이 있는 종목만 기간·당일 청산(직접 산 종목은 손절·익절만)
       let why = null, kind = null;
-      if (A.stopLossPct < 0 && h.pnlPct <= A.stopLossPct) { kind = 'auto_stop_loss'; why = '자동 손절 ' + h.pnlPct + '%'; }
-      else if (A.takeProfitPct > 0 && h.pnlPct >= A.takeProfitPct) { kind = 'auto_take_profit'; why = '자동 익절 +' + h.pnlPct + '%'; }
-      else if (auto && mode === 'day' && now >= hm(A.dayExitAt)) { kind = 'auto_day_exit'; why = '당일 매매 장 마감 전 청산 ' + (h.pnlPct >= 0 ? '+' : '') + h.pnlPct + '%'; }
-      else if (auto && A.holdDays > 0 && days >= A.holdDays) { kind = 'auto_time_exit'; why = '보유 ' + days + '거래일 기간 청산 ' + (h.pnlPct >= 0 ? '+' : '') + h.pnlPct + '%'; }
+      if (A.stopLossPct < 0 && stopWin && h.pnlPct <= A.stopLossPct) { kind = 'auto_stop_loss'; why = '자동 손절 ' + h.pnlPct + '%'; }
+      else if (A.takeProfitPct > 0 && inExit && h.pnlPct >= A.takeProfitPct) { kind = 'auto_take_profit'; why = '자동 익절 +' + h.pnlPct + '%'; }
+      // 장 마감 자체는 매도 사유가 아님. 익절·손절·기간·신호 조건으로만 청산.
+      else if (auto && A.holdDays > 0 && inExit && days >= A.holdDays) { kind = 'auto_time_exit'; why = '보유 ' + days + '거래일 기간 청산 ' + (h.pnlPct >= 0 ? '+' : '') + h.pnlPct + '%'; }
+      else if (boxMap && boxMap[h.code] && boxMap[h.code].sellSig && inExit) { kind = 'auto_box_sell'; why = '박스권 저항 익절 ' + (h.pnlPct >= 0 ? '+' : '') + h.pnlPct + '%'; }
       if (kind) { log({ kind, name: h.name, pnl: h.pnlPct, days }); await order('sell', h.code, h.qty, { reason: why, src: 'auto' }); sold.add(h.code); }
     }
-    if (mode === 'day' && (now < hm(A.dayEntryFrom) || now > hm(A.dayEntryTo))) { log({ kind: 'auto_wait', msg: `당일 매매 신규 진입 시간(${A.dayEntryFrom}~${A.dayEntryTo}) 아님` }); return; }
-    const sig = await signals(); const { list, note } = candidates(sig);
+    if (!tradeWindow(A, now)) { log({ kind: 'auto_wait', msg: `설정된 매매 시간 아님 (오전 ${A.dayEntryFrom}부터 ${A.morningMinutes}분 / 오후 장 마감 ${A.afternoonMinutes}분 전부터)` }); return; }
+    const sig = await signals(); const cand = candidates(sig);
+    let list = cand.list, note = cand.note;
+    if (A.signal === 'box') {
+      // 1분봉 박스권: 유동성 상위 30종목 + 보유 종목을 스캔해 지지 반등 매수 후보만
+      let uni = []; try { const ds = UNIVERSE_GET ? await UNIVERSE_GET() : null; uni = ((ds && ds.list) || []).filter(x => x.trdval && /KOSPI|KOSDAQ/.test(x.market) && !/스팩|SPAC|우$|우B$|리츠/.test(x.name)).sort((a, b) => b.trdval - a.trdval).slice(0, 30).map(x => ({ code: x.code, name: x.name })); } catch (e) {}
+      const names = {}; uni.forEach(x => { names[x.code] = x.name; }); bal.holdings.forEach(h => { names[h.code] = h.name; });
+      const syms = [...new Set([...bal.holdings.map(h => h.code), ...uni.map(x => x.code)])];
+      const bs = await MB.scan(syms, names);
+      list = bs.filter(b => b.buySig).map(b => ({ code: b.code, name: b.name || b.code, price: b.price, trdval: 0, _s: A.buyScoreMin, _why: ['1분봉 박스권', '지지 ' + b.support + '·저항 ' + b.resistance + '·폭 ' + b.boxPct + '%', '지지 반등'] }));
+      note = `박스권 스캔 ${bs.length}종목 → 지지 반등 ${list.length}`;
+      log({ kind: 'auto_boxscan', note });
+    }
     log({ kind: 'auto_scan', note, vix: sig.vix, n: list.length });
     const held = new Set(bal.holdings.filter(h => !sold.has(h.code)).map(h => h.code));
     sold.forEach(c => held.add(c)); // 같은 날 판 종목은 다시 사지 않음
@@ -386,12 +447,19 @@ async function handle(req, res, url) {
     const extra = {}; ['buyScoreMin', 'positionPct', 'maxHoldings', 'maxBuysPerDay', 'stopLossPct', 'takeProfitPct', 'loopSeconds', 'maxCandidates', 'universeTop', 'loserMinSells', 'loserBlockDays'].forEach(k => { if (sp.get(k) != null) extra[k] = Number(sp.get(k)); });
     if (sp.get('requireVix30') != null) extra.requireVix30 = sp.get('requireVix30') === '1';
     if (sp.get('skipLosers') != null) extra.skipLosers = sp.get('skipLosers') === '1';
-    ['holdDays', 'rsiMax'].forEach(k => { if (sp.get(k) != null) extra[k] = Number(sp.get(k)); });
+    ['holdDays', 'rsiMax', 'newsMin'].forEach(k => { if (sp.get(k) != null) extra[k] = Math.max(0, Math.min(20, Number(sp.get(k)) || 0)); });
     if (sp.get('rsiBuy') != null) extra.rsiBuy = sp.get('rsiBuy') === '1';
     if (['score', 'trend'].includes(sp.get('signal'))) extra.signal = sp.get('signal');
     if (['off', 'basic', 'strong'].includes(sp.get('regime'))) extra.regime = sp.get('regime');
     if (COMBO[sp.get('combo')]) extra.combo = sp.get('combo');
     ['dayEntryFrom', 'dayEntryTo', 'dayExitAt', 'comboFrom', 'comboTo'].forEach(k => { const v = sp.get(k); if (v && /^\d{1,2}:\d{2}$/.test(v)) extra[k] = v; });
+    for (const k of ['morningMinutes', 'afternoonMinutes']) {
+      if (sp.has(k)) { const n = Number(sp.get(k)); if (!Number.isInteger(n) || n < 1 || n > 180) return jres(res, { ok: false, msg: '매매 지속 시간은 1~180분의 정수로 설정하세요.' }, 400); extra[k] = n; }
+    }
+    for (const k of ['dayEntryFrom', 'dayExitAt']) {
+      if (extra[k] && (hm(extra[k]) < 540 || hm(extra[k]) > 930 || Number(extra[k].split(':')[1]) > 59)) return jres(res, { ok: false, msg: '시작 시각은 09:00~15:30 범위로 설정하세요.' }, 400);
+    }
+    if (sp.get('stopAnytime') != null) extra.stopAnytime = sp.get('stopAnytime') === '1' ? 1 : 0;
     const md = sp.get('mode');
     if (md && MODE_PRESET[md]) { extra.mode = md; if (sp.get('preset') === '1') Object.assign(extra, MODE_PRESET[md]); }
     Object.keys(extra).forEach(k => { if (typeof extra[k] === 'number' && !isFinite(extra[k])) delete extra[k]; });
@@ -409,7 +477,20 @@ async function handle(req, res, url) {
     if (sp2.get('csv') === '1') { res.writeHead(200, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="trade-journal.csv"', 'Cache-Control': 'no-store' }); return res.end(J.csv()); }
     return jres(res, { ok: true, ...J.summary() });
   }
-  if (url === '/api/kis/bench') { return jres(res, { ok: true, rows: J.bench(), totals: J.totals() }); }
+  if (url === '/api/kis/boxlist') {
+    let uni = [];
+    try { const ds = UNIVERSE_GET ? await UNIVERSE_GET() : null; uni = ((ds && ds.list) || []).filter(x => x.trdval && /KOSPI|KOSDAQ/.test(x.market) && !/스팩|SPAC|우$|우B$|리츠/.test(x.name)).sort((a, b) => b.trdval - a.trdval).slice(0, 30).map(x => ({ code: x.code, name: x.name })); } catch (e) {}
+    if (!uni.length) return jres(res, { ok: false, msg: '종목 목록(KRX)을 못 받았습니다' });
+    const names = {}; uni.forEach(x => { names[x.code] = x.name; });
+    const rows = await MB.scan(uni.map(x => x.code), names, { max: 30 });
+    rows.sort((a, b) => (b.buySig - a.buySig) || (a.boxPct - b.boxPct));
+    return jres(res, { ok: true, rows, at: new Date().toISOString() });
+  }
+  if (url === '/api/kis/bench') { let gc = null; try { gc = await cached('gcbt', async () => { const ds = await cached('krxstocks', getKrxStocks, 3600e3).catch(() => ({}));
+      const uni = (ds.list || []).filter(x => x.trdval && /KOSPI|KOSDAQ/.test(x.market) && !/스팩|SPAC|우$|우B$|리츠/.test(x.name)).sort((a, b) => b.trdval - a.trdval).slice(0, 200).map(x => ({ sym: x.code + (x.market === 'KOSDAQ' ? '.KQ' : '.KS'), name: x.name }));
+      return GCBT.backtest(uni, { hold: 20, fee: 0.3 }); }, 12 * 3600e3).catch(() => null); } catch (e) {}
+    const st = gc && gc.risk ? gc.risk.find(r => r.exposure === 100 && r.stop === -3) : null;
+    return jres(res, { ok: true, rows: J.bench(), totals: J.totals(), gcExpect: st ? { total: st.total, mdd: st.mdd, stopRate: st.stopRate, sharpe: st.sharpe, periods: gc.n, hold: gc.hold, from: gc.from, to: gc.to } : null }); }
   if (url === '/api/kis/log') { return jres(res, { ok: true, log: LOGS.slice(-60) }); }
 
   return jres(res, { ok: false, msg: 'unknown' }, 404);
@@ -423,4 +504,4 @@ function startLoop() {
 }
 startLoop();
 
-module.exports = { init, handle, startLoop, _t: { C, autoTick, comboTick, resetCombo: () => { comboDay = ''; }, candidates, rsiAllowed, bizDaysSince, MODE_PRESET } };
+module.exports = { init, handle, startLoop, setUniverse, _t: { C, autoTick, comboTick, resetCombo: () => { comboDay = ''; }, candidates, rsiAllowed, bizDaysSince, tradeWindow, sessionWindows, MODE_PRESET } };

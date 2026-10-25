@@ -5,11 +5,14 @@ const fs = require('fs');
 const path = require('path');
 
 const KIS = require('./kis.js');
+const MB = require('./minbox.js');
+try { KIS.setUniverse(() => cached('krxstocks', getKrxStocks, 3600e3)); } catch (e) {}
 const COINS = require('./coins.js');
 const COINBT = require('./coinbt.js');
 const KRBT = require('./krbt.js');
 const INTRA = require('./intrabt.js');
 const SHORT = require('./shortbt.js');
+const GCBT = require('./gcbt.js');
 const PORT = process.env.PORT || 8080;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 const CACHE_MS = 5 * 60 * 1000;
@@ -206,6 +209,84 @@ function maTurn(cl){
   return { ma5:+m5[L].toFixed(1), ma10:+m10[L].toFixed(1), ma20:+m20[L].toFixed(1), crossAgo, order:nowOrder, turning };
 }
 const LEV_RE = /레버리지|인버스|숏|곱버스|선물인버스|[23]X/i;
+// ── 보완 골든크로스: 20·60·120일선 우상향 + 거래대금 상위 + 5일선이 20일선 이탈했지만 60일선이 지지 ──
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const GC = { v: null, t: 0, p: null };
+async function getGcStrict() {
+  if (GC.v && Date.now() - GC.t < 30 * 60e3) return GC.v;
+  if (GC.p) return GC.p;
+  GC.p = (async () => {
+    const h = cache.krxhist && (cache.krxhist.v || cache.krxhist);
+    if (!h || !h.s) return { loading: true, list: [] };
+    const pool = Object.entries(h.s).map(([code, o]) => ({ code, name: o.n, market: o.m, td: o.td || 0 }))
+      .filter(x => x.td > 0 && !LEV_RE.test(x.name)).sort((a, b) => b.td - a.td).slice(0, 200);
+    const list = [];
+    for (let i = 0; i < pool.length; i += 6) {
+      const rs = await Promise.all(pool.slice(i, i + 6).map(async (x, j) => {
+        const sym = x.code + (x.market === 'KOSDAQ' ? '.KQ' : '.KS');
+        return { x, rank: i + j + 1, d: await cached('kh2:' + sym, () => yahooSeries(sym, '2y'), 12 * 3600e3) };
+      }));
+      rs.forEach(({ x, rank, d }) => {
+        if (!d || !d.series || d.series.length < 130) return;
+        const cl = d.series.map(p => p[1]);
+        const m5 = maArr(cl, 5), m20 = maArr(cl, 20), m60 = maArr(cl, 60), m120 = maArr(cl, 120), L = cl.length - 1;
+        if (m120[L] == null || m120[L - 5] == null || m60[L] == null || m60[L - 5] == null || m20[L] == null || m20[L - 5] == null || m5[L] == null) return;
+        const up = a => a[L] > a[L - 5]; // 우상향: 5거래일 전보다 위
+        if (!(up(m20) && up(m60) && up(m120))) return;
+        if (!(m5[L] < m20[L])) return;            // 5일선이 20일선을 이탈(눌림목)
+        const price = d.price || cl[L];
+        if (!(price >= m60[L])) return;           // 60일선이 지지
+        list.push({ code: x.code, name: x.name, market: x.market, price, trdval: x.td, trdRank: rank,
+          ma5: +m5[L].toFixed(0), ma20: +m20[L].toFixed(0), ma60: +m60[L].toFixed(0), ma120: +m120[L].toFixed(0), rsi: rsi14(cl) });
+      });
+      await sleep(200);
+    }
+    const v = { list, at: new Date().toISOString() }; GC.v = v; GC.t = Date.now();
+    return v;
+  })();
+  try { return await GC.p; } finally { GC.p = null; }
+}
+// ── 뉴스 트래픽: 07:00~11:30 KST 사이 1시간 간격으로 후보 종목의 구글뉴스 기사 수(최근 2일) 수집 ──
+const NEWS = { at: 0, counts: {}, list: [], loading: null };
+function kstParts() { const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })); return { wd: d.getDay(), mins: d.getHours() * 60 + d.getMinutes() }; }
+async function newsCount(name) {
+  // 구글뉴스 RSS(최근 2일) 우선, 실패·0건이면 빙뉴스 RSS로 보완
+  try {
+    const u = 'https://news.google.com/rss/search?q=' + encodeURIComponent('"' + name + '" when:2d') + '&hl=ko&gl=KR&ceid=KR:ko';
+    const r = await fetch(u, { headers: { 'User-Agent': UA } });
+    if (r.ok) { const n = ((await r.text()).match(/<item>/g) || []).length; if (n > 0) return n; }
+  } catch (e) { /* next */ }
+  try {
+    const u2 = 'https://www.bing.com/news/search?q=' + encodeURIComponent(name) + '&format=RSS&setmkt=ko-KR';
+    const r2 = await fetch(u2, { headers: { 'User-Agent': UA } });
+    if (!r2.ok) return null;
+    return ((await r2.text()).match(/<item>/g) || []).length || 0;
+  } catch (e) { return null; }
+}
+async function collectNews() {
+  if (NEWS.loading) return NEWS.loading;
+  NEWS.loading = (async () => {
+    const [gc, scan] = await Promise.all([getGcStrict().catch(() => null), cached('krxscan', getKrxScan, 30 * 60e3).catch(() => null)]);
+    const seen = new Set(), pool = [];
+    ((gc && gc.list) || []).slice(0, 15).forEach(x => { if (!seen.has(x.code)) { seen.add(x.code); pool.push(x); } });
+    ((scan && scan.turning) || []).slice(0, 15).forEach(x => { if (!seen.has(x.code)) { seen.add(x.code); pool.push(x); } });
+    const counts = {};
+    for (let i = 0; i < pool.length; i += 6) {
+      const rs = await Promise.all(pool.slice(i, i + 6).map(async x => [x.code, await newsCount(x.name)]));
+      rs.forEach(([c, n]) => { if (n != null) counts[c] = n; });
+      await sleep(200);
+    }
+    NEWS.counts = counts; NEWS.list = pool.map(x => ({ code: x.code, name: x.name })); NEWS.at = Date.now();
+    return NEWS;
+  })();
+  try { return await NEWS.loading; } finally { NEWS.loading = null; }
+}
+function maybeNews() {
+  const t = kstParts(); if (t.wd === 0 || t.wd === 6) return null;         // 주말 제외
+  if (t.mins < 7 * 60 || t.mins > 11 * 60 + 30) return null;              // 07:00~11:30 (장 시작 2시간 전 ~ 마감 4시간 전)
+  if (Date.now() - NEWS.at < 55 * 60e3) return null;                       // 1시간 간격
+  return collectNews();
+}
 async function getKrxTop() {
   if (!KRX_KEY) return { noKey: true, rows: [] };
   const ds = await cached('krxstocks', getKrxStocks, 3600e3);
@@ -720,6 +801,19 @@ const STATIC = {
 
 http.createServer(async (req, res) => {
   const url = req.url.split('?')[0];
+  // 1분봉 박스권 스캔 (읽기 전용 — PIN 불필요)
+  if (url === '/api/kis/boxlist') {
+    try {
+      const ds = await cached('krxstocks', getKrxStocks, 3600e3);
+      const uni = ((ds && ds.list) || []).filter(x => x.trdval && /KOSPI|KOSDAQ/.test(x.market) && !/스팩|SPAC|우$|우B$|리츠/.test(x.name)).sort((a, b) => b.trdval - a.trdval).slice(0, 30).map(x => ({ code: x.code, name: x.name }));
+      if (!uni.length) { res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ ok: false, msg: '종목 목록(KRX)을 못 받았습니다' + (ds && ds.noKey ? ' (KRX 키 없음)' : ds && ds.unauthorized ? ' (KRX 401)' : '') })); return; }
+      const names = {}; uni.forEach(x => { names[x.code] = x.name; });
+      const rows = await MB.scan(uni.map(x => x.code), names, { max: 30 });
+      rows.sort((a, b) => (b.buySig - a.buySig) || (a.boxPct - b.boxPct));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ ok: true, rows, at: new Date().toISOString() }));
+    } catch (e) { res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ ok: false, msg: String(e && e.message || e) })); }
+    return;
+  }
   if (url.indexOf('/api/kis') === 0) {
     try { return await KIS.handle(req, res, url); } catch (e) { res.writeHead(500, {'Content-Type': 'application/json; charset=utf-8'}); return res.end(JSON.stringify({ ok:false, msg:String(e && e.message || e) })); }
   }
@@ -833,6 +927,17 @@ http.createServer(async (req, res) => {
       const data = await KRBT.backtest(uni, fng && fng.history, hq, wa && wa.length === 6 ? wa : null, fq == null ? 0.3 : +fq);
       return res.end(JSON.stringify(data));
     }
+    if (url === '/api/gcstrict') {
+      const g = await getGcStrict().catch(e => ({ error: String(e && e.message || e) }));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(JSON.stringify(g));
+    }
+    if (url === '/api/newsheat') {
+      if (new URL(req.url, 'http://x').searchParams.get('force') != null) await collectNews().catch(() => {});
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(JSON.stringify({ at: NEWS.at ? new Date(NEWS.at).toISOString() : null, counts: NEWS.counts, list: NEWS.list,
+        window: '장 시작 2시간 전(07:00) ~ 장 마감 4시간 전(11:30) 사이 1시간 간격 수집 · 최근 2일 구글뉴스 기사 수' }));
+    }
     if (url === '/api/kospireg') {
       const r = await cached('kospireg', async () => {
         const y = await yahooSeries('^KS11', '3mo'); const c = y && y.series ? y.series.map(p => p[1]) : [];
@@ -843,6 +948,17 @@ http.createServer(async (req, res) => {
       }, 15 * 60e3).catch(() => ({ ok: false }));
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify(r));
+    }
+    if (url === '/api/gcbt') {
+      const g = k => (req.url.match(new RegExp('[?&]' + k + '=(-?[\\d.]+)')) || [])[1];
+      const ds = await cached('krxstocks', getKrxStocks, 3600e3).catch(() => ({}));
+      const N = g('n') === '60' ? 60 : 200;
+      const uni = (ds.list || []).filter(x => x.trdval && /KOSPI|KOSDAQ/.test(x.market) && !/스팩|SPAC|우$|우B$|리츠/.test(x.name))
+        .sort((a, b) => b.trdval - a.trdval).slice(0, N).map(x => ({ sym: x.code + (x.market === 'KOSDAQ' ? '.KQ' : '.KS'), name: x.name }));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      if (!uni.length) return res.end(JSON.stringify({ error: 'KRX 종목 목록을 불러오지 못했습니다' }));
+      try { return res.end(JSON.stringify(await GCBT.backtest(uni, { hold: g('hold'), fee: g('fee') }))); }
+      catch (e) { return res.end(JSON.stringify({ error: String(e && e.message || e) })); }
     }
     if (url === '/api/shortbt' || url === '/api/shortlive') {
       const g = k => (req.url.match(new RegExp('[?&]' + k + '=(-?[\\d.]+)')) || [])[1];
@@ -967,6 +1083,7 @@ http.createServer(async (req, res) => {
   }
 }).listen(PORT, async () => {
   try { KIS.init(PORT); } catch(e){}
+  setInterval(() => { try { maybeNews(); } catch(e){} getGcStrict().catch(() => {}); }, 60e3);
   try { cache.krxhist = await cached('krxhist', getKrxHist, 6*3600e3); console.log('[warm] krxhist', cache.krxhist && cache.krxhist.count, '종목'); } catch(e){ console.log('[warm] krxhist fail', e && e.message); }
   console.log('공포지수 앱 실행 중: http://localhost:' + PORT);
   (async () => {

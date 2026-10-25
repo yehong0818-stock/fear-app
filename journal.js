@@ -54,13 +54,13 @@ function attachFill(id, fill) {
   save(); return x;
 }
 
-/** 전략(태그)별 백테스트 대조: 체결 슬리피지·실제 손익 vs 백테스트 기대 */
+/** 전략(태그)별 백테스트 대조: 체결 슬리피지·실제 손익·손절 빈도 vs 백테스트 기대 */
 function bench() {
   const m = {};
   J.forEach(x => {
     const tag = x.tag || (x.src === 'auto' ? 'auto:기타' : '수동·기타');
-    const o = m[tag] || (m[tag] = { tag, name: x.name, trades: 0, buys: 0, sells: 0, dry: 0, real: 0, slips: [], pnls: [], wins: 0, losses: 0, realized: 0, firstTs: x.ts, lastTs: x.ts, filled: 0, noFill: 0 });
-    o.trades++; if (x.side === 'buy') o.buys++; else o.sells++;
+    const o = m[tag] || (m[tag] = { tag, name: x.name, trades: 0, buys: 0, sells: 0, dry: 0, real: 0, slips: [], pnls: [], wins: 0, losses: 0, realized: 0, firstTs: x.ts, lastTs: x.ts, filled: 0, noFill: 0, stops: 0, exits: 0 });
+    o.trades++; if (x.side === 'buy') o.buys++; else { o.sells++; o.exits++; if (x.reason && (x.reason.includes('손절') || /stop/i.test(x.reason))) o.stops++; }
     if (x.dry) o.dry++; else o.real++;
     if (x.slip != null) o.slips.push(x.slip);
     if (x.fill != null) o.filled++; else if (x.bt != null) o.noFill++;
@@ -68,7 +68,10 @@ function bench() {
     o.lastTs = x.ts;
   });
   const av = a => a.length ? +(a.reduce((x, y) => x + y, 0) / a.length).toFixed(3) : null;
-  return Object.values(m).map(o => ({ ...o, slips: o.slips.length, avgSlip: av(o.slips),
+  const days = {};
+  J.forEach(x => { const d = String(x.ts).slice(0, 10); days[d] = days[d] || (days[d] = { buys: 0, sells: 0, stops: 0 }); if (x.side === 'buy') days[d].buys++; else { days[d].sells++; if (x.reason && x.reason.includes('손절')) days[d].stops++; } });
+  const stopDays = Object.values(days).filter(d => d.buys > 0 && d.stops > 0).length, buyDays = Object.values(days).filter(d => d.buys > 0).length;
+  return Object.values(m).map(o => ({ ...o, slips: o.slips.length, avgSlip: av(o.slips), stopRate: o.exits + o.sells ? Math.round(100 * o.stops / Math.max(1, o.exits || o.sells)) : null, buyDays, stopDays,
     worstSlip: o.slips.length ? +Math.max(...o.slips).toFixed(2) : null, bestSlip: o.slips.length ? +Math.min(...o.slips).toFixed(2) : null,
     closed: o.pnls.length, avgPnlPct: av(o.pnls), realized: +o.realized.toFixed(0),
     winRate: (o.wins + o.losses) ? +((o.wins / (o.wins + o.losses)) * 100).toFixed(1) : null }))

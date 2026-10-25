@@ -480,6 +480,62 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
 .krxdd button small{color:var(--mute);font-family:'IBM Plex Mono',monospace;font-size:11px;white-space:nowrap}
 .krxdd .mk{font-size:10px;padding:1px 5px;border-radius:5px;border:1px solid var(--line);margin-left:6px;color:var(--mute)}
 .krxdd .em{padding:8px 10px;font-size:12px;color:var(--mute)}
+.env-badge{display:inline-block;vertical-align:middle;font-family:Pretendard,system-ui,sans-serif;font-size:12px;font-weight:700;line-height:1.5;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.env-badge.env-demo{background:rgba(91,141,255,.14);color:var(--cold);border:1px solid rgba(91,141,255,.4)}
+.env-badge.env-real{background:rgba(255,107,61,.14);color:var(--hot);border:1px solid rgba(255,107,61,.45)}
+
+/* YE 매매: 전략·규모·위험·시간을 분리한 설정 */
+.ye-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0}
+.ye-group{min-width:0;border:1px solid var(--line);border-radius:12px;padding:18px;background:var(--frost)}
+.ye-group h3{margin:0;font-size:16px;line-height:1.5;color:var(--ink)}
+.ye-help{margin:5px 0 16px;font-size:12px;line-height:1.6;color:var(--mute)}
+.ye-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.ye-fields label{display:flex;flex-direction:column;gap:7px;min-width:0;font-size:12px;color:var(--mute)}
+.ye-fields input:not([type=checkbox]),.ye-fields select{width:100%;min-width:0;box-sizing:border-box}
+.ye-fields label.kis-chk{flex-direction:row;align-items:center;flex-wrap:wrap;align-self:end;min-height:38px;color:var(--ink)}
+.ye-fields label.kis-chk input{flex:0 0 auto}
+.ye-advanced{border-top:1px solid var(--line);padding:14px 0;margin-top:8px}
+.ye-advanced summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);line-height:1.7}
+.ye-advanced summary span{font-weight:400;color:var(--mute);margin-left:10px;font-size:12px}
+.ye-advanced summary:focus-visible{outline:2px solid var(--cold);outline-offset:4px}
+.ye-save{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);padding:18px 0 8px}
+.ye-save #kisSaveAuto{background:var(--cold);color:var(--ink);padding:11px 22px;font-weight:700}
+@media(max-width:760px){.ye-settings{grid-template-columns:1fr}.ye-group{padding:14px}.ye-save #kisSaveAuto{width:100%}}
+@media(max-width:420px){.ye-fields{grid-template-columns:1fr}.ye-advanced summary span{display:block;margin-left:0}}
+
+.ye-policy{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;padding:15px 18px;border:1px solid var(--line);border-radius:10px;margin-bottom:16px;background:var(--card);font-size:12px;color:var(--mute)}
+.ye-policy b{color:var(--ink)}
+.ye-connect{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 20px;margin:18px 0}
+.ye-connect input,.ye-connect select{box-sizing:border-box;min-width:0;padding:11px 12px}
+.ye-connect label{gap:8px;font-size:12px}
+.ye-connect label.kis-chk{padding:12px;border:1px solid var(--line);border-radius:8px;flex-wrap:wrap}
+.ye-order-label{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--mute)}
+#liveSec .symbar{align-items:end;gap:14px}
+.ye-settings{grid-template-columns:1fr;gap:0;margin:8px 0}
+.ye-group{display:grid;grid-template-columns:180px minmax(0,1fr);gap:3px 24px;padding:22px 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
+.ye-group h3{grid-column:1;grid-row:1;font-size:15px}
+.ye-group .ye-help{grid-column:1;grid-row:2;margin:2px 0 0;font-size:11px}
+.ye-group .ye-fields{grid-column:2;grid-row:1 / span 2;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:16px}
+.ye-fields label{line-height:1.6}
+.ye-fields input:not([type=checkbox]),.ye-fields select{border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);padding:10px;font-size:12px;min-height:40px}
+.ye-fields label.kis-chk{align-self:center;font-size:12px}
+@media(max-width:760px){.ye-connect{grid-template-columns:repeat(2,minmax(0,1fr))}.ye-group{display:block;padding:18px 0}.ye-group .ye-help{margin:4px 0 14px}.ye-group .ye-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.ye-policy{gap:8px 14px}}
+@media(max-width:420px){.ye-connect,.ye-group .ye-fields{grid-template-columns:1fr}.ye-connect{gap:14px}.ye-policy span{flex-basis:100%}.ye-order-label{flex:1}#liveSec .symbar input{max-width:100%;box-sizing:border-box}}
+
+.ye-session{grid-column:1 / -1;padding:14px 16px;border:1px solid var(--line);border-radius:10px;min-width:0}
+.ye-session>b{font-size:13px;color:var(--ink)}
+.ye-session-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+.ye-session .ye-help{margin:12px 0 0!important;color:var(--mute)}
+@media(max-width:420px){.ye-session-fields{grid-template-columns:1fr}.ye-session{padding:12px}}
+
+.ye-time-compact{grid-column:1/-1;min-width:0}
+.ye-time-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0}
+.ye-time-row+.ye-time-row{border-top:1px solid var(--line)}
+.ye-time-row>b{font-size:12px;min-width:30px}
+.ye-time-row label{display:flex!important;flex-direction:row!important;align-items:center;gap:8px!important;font-size:12px;white-space:nowrap}
+.ye-time-row input,.ye-time-row select{width:110px!important;min-height:34px!important;padding:6px 8px!important}
+.ye-time-row small{font-size:12px;color:var(--mute);margin-left:auto;white-space:nowrap}
+@media(max-width:520px){.ye-time-row{gap:8px}.ye-time-row input,.ye-time-row select{width:96px!important}.ye-time-row small{flex-basis:100%;margin-left:38px}.ye-time-row label{font-size:11px}}
 </style>
 </head>
 <body>
@@ -499,7 +555,7 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
   <button type="button" data-t="coin">코인</button>
   <button type="button" data-t="quote">시세·비교</button>
   <button type="button" data-t="corr">상관</button>
-  <button type="button" data-t="live">실전매매</button>
+  <button type="button" data-t="live">YE 매매</button>
 </nav>
 
 <section class="favbar" id="favSec">
@@ -678,6 +734,17 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
     <div class="krx-grid" id="krbtAcc"></div>
     <p class="lbl" id="krbtNote" style="margin:8px 0 0"></p>
   </div>
+  <div class="panel" style="margin-top:10px" id="gcbtPanel">
+    <div class="cpctl-row">
+      <div class="cph" style="margin:0"><b>골든크로스 보완 백테스트</b><span class="lbl" id="gcbtSub">기존(5일선 상향 돌파) vs 보완(20·60·120일선 우상향 + 60일선 지지 + 유동성)</span></div>
+      <div class="cpbtns"><span class="seg" id="gcbtHold"><button data-h="5">5일</button><button data-h="10" aria-pressed="true">10일</button><button data-h="20">20일</button></span><button class="btn sm" id="gcbtRun">계산</button></div>
+    </div>
+    <div class="cbtwrap"><table class="cbt" id="gcbtTable"><thead><tr><th>규칙</th><th>누적 수익</th><th>발생 건수</th><th>발생 회차</th><th>건당 평균</th><th>같은 시점 평균 대비</th><th>상승 확률</th><th>투자 기간</th><th>샤프</th><th>최대 낙폭</th></tr></thead><tbody><tr><td colspan="10" class="lbl">이 탭을 열면 계산합니다 (처음 1회 약 20초)</td></tr></tbody></table></div>
+    <div class="sec-label" style="margin:14px 0 6px">위험 관리 비교 · 보완 골든크로스 × 투자 비중 × 손절(종가 기준)</div>
+    <div class="cbtwrap"><table class="cbt" id="gcbtRisk"><thead><tr><th>투자 비중</th><th>손절</th><th>누적 수익</th><th>샤프</th><th>최대 낙폭</th><th>손절 비율</th><th>누적/낙폭</th></tr></thead><tbody></tbody></table></div>
+    <p class="lbl" id="gcbtRiskNote" style="margin:6px 0 0"></p>
+    <p class="lbl" id="gcbtNote" style="margin:8px 0 0"></p>
+  </div>
   <div class="panel" style="margin-top:10px" id="sbtPanel">
     <div class="cpctl-row">
       <div class="cph" style="margin:0"><b>단타 기법 추천 · 조합 백테스트</b><span class="lbl" id="sbtSub">일봉 약 21개월 · 기간을 앞·뒤 절반으로 나눠 둘 다 수익인지 검증</span></div>
@@ -844,17 +911,18 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
 </section>
 
 <section id="liveSec" data-tab="live">
-  <h2>실전매매 <small id="kisSub">한국투자증권 KIS · PIN 보호 · 기본은 모의투자</small></h2>
+  <h2>YE 매매 <span id="kisEnvBadge" class="env-badge env-demo">모의투자 계좌</span> <small id="kisSub">한국투자증권 KIS · PIN 보호 · 기본은 모의투자</small></h2>
 
+<div class="ye-policy"><b>보유형 매매</b><span>오전·오후 조건 매매</span><span>장중 상시 손절</span><span>당일 강제청산 없음</span></div>
   <div class="panel" style="margin-bottom:10px">
     <div class="rec-h"><b>KIS 연결 설정</b><span id="kisState" class="note" style="border:0;padding:0;margin:0"></span></div>
-    <div class="kis-grid">
-      <input id="kisAppKey" placeholder="앱키(App Key)">
-      <input id="kisAppSec" type="password" placeholder="앱시크릿(App Secret)">
-      <input id="kisAcct" placeholder="계좌번호 8자리">
-      <input id="kisProd" placeholder="계좌상품코드" value="01">
-      <select id="kisEnv"><option value="demo">모의투자</option><option value="real">실전투자</option></select>
-      <input id="kisPin" type="password" placeholder="트레이딩 PIN (직접 정함)">
+    <p class="ye-help">항목명을 보고 입력하세요. 실전·모의 여부와 주문 전송 여부는 별개입니다.</p><div class="kis-grid ye-connect">
+      <label>앱 키<input id="kisAppKey" placeholder="발급받은 앱 키" autocomplete="off"></label>
+      <label>앱 시크릿<input id="kisAppSec" type="password" placeholder="발급받은 비밀 키" autocomplete="off"></label>
+      <label>계좌번호 · 앞 8자리<input id="kisAcct" placeholder="숫자 8자리" inputmode="numeric" maxlength="8"></label>
+      <label>계좌상품코드 · 뒤 2자리<input id="kisProd" placeholder="예: 01 (종합계좌)" value="01" maxlength="2" inputmode="numeric" title="계좌번호 앞 8자리와 별도인 뒤 2자리입니다. 01은 종합계좌 코드입니다."></label>
+      <label>계좌 환경<select id="kisEnv"><option value="demo">모의투자</option><option value="real">실전투자</option></select></label>
+      <label>주문 보호 비밀번호<input id="kisPin" type="password" placeholder="직접 정한 주문용 비밀번호" autocomplete="off"></label>
       <label class="kis-chk"><input type="checkbox" id="kisDry" checked> DRY-RUN(주문 미전송)</label>
       <label class="kis-chk"><input type="checkbox" id="kisAllow"> 실전 주문 허용</label>
     </div>
@@ -874,7 +942,7 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
 
   <div class="panel" style="margin-bottom:10px">
     <div class="rec-h"><b>수동 주문</b><span class="note" style="border:0;padding:0;margin:0">1건 즉시</span></div>
-    <div class="symbar"><input id="kisCode" placeholder="종목코드 (예: 005930)" style="width:180px"><input id="kisQty" type="number" min="1" value="1" style="width:80px">
+    <div class="symbar"><label class="ye-order-label">종목코드<input id="kisCode" placeholder="예: 005930" style="width:180px"></label><label class="ye-order-label">주문 수량 · 주<input id="kisQty" type="number" min="1" value="1" style="width:100px"></label>
       <button class="btn sm" id="kisBuy" style="background:var(--hot);color:#fff;border-color:var(--hot)">매수</button>
       <button class="btn sm" id="kisSell" style="background:var(--cold);color:#fff;border-color:var(--cold)">매도</button>
       <span id="kisOMsg" class="note" style="border:0;padding:0;margin:0"></span>
@@ -883,37 +951,10 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
 
   <div class="panel">
     <div class="rec-h"><b>자동매매</b>
-      <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="btn sm" id="kisAuto" aria-pressed="false">자동매매 켜기</button><button class="btn sm" id="kisOnce">1회 점검</button><span id="kisAutoSub" class="note" style="border:0;padding:0;margin:0"></span></span></div>
-    <div class="kis-grid">
-      <label>매수 임계점수<input id="kisScore" type="number" step="1" value="3"></label>
-      <label>종목당 비중%<input id="kisPos" type="number" step="1" value="10"></label>
-      <label>최대 보유<input id="kisMaxH" type="number" step="1" value="5"></label>
-      <label>일일 매수 한도<input id="kisMaxB" type="number" step="1" value="3"></label>
-      <label>손절%<input id="kisSL" type="number" step="1" value="-5"></label>
-      <label>익절% (0=없음)<input id="kisTP" type="number" step="1" value="10"></label>
-      <label>매매 방식<select id="kisMode"><option value="swing">스윙(기존)</option><option value="short">단기(1~5거래일)</option><option value="day">당일(장 마감 전 청산)</option><option value="combo">단타 조합(검증 통과 기법)</option></select></label>
-      <label class="kis-combo">단타 조합<select id="kisCombo"><option value="r2m">RSI2 눌림목 + 코스피 필터 (추천)</option><option value="h">RSI2(필터) + IBS 저점 반등</option><option value="r2">RSI2 눌림목 (필터 없음)</option></select></label>
-      <label class="kis-combo">종가 매매 시작<input id="kisComboFrom" type="time" value="15:10"></label>
-      <label class="kis-combo">종가 매매 마감<input id="kisComboTo" type="time" value="15:18"></label>
-      <label>매수 신호<select id="kisSignal"><option value="score">점수 합산</option><option value="trend">추세·모멘텀 상위</option></select></label>
-      <label>장세 필터(신규 매수)<select id="kisRegime"><option value="off">끔</option><option value="basic">코스피 20일선 위</option><option value="strong">20일선 위 + 상승</option></select></label>
-      <label>보유 기간(거래일, 0=제한 없음)<input id="kisHoldDays" type="number" step="1" min="0" max="60" value="0"></label>
-      <label class="kis-chk"><input type="checkbox" id="kisRsiBuy"> RSI 과매도 매수 <span class="lbl" id="kisRsiState"></span></label>
-      <label>RSI 기준(미만)<input id="kisRsiMax" type="number" step="1" value="30"></label>
-      <label class="kis-day">당일: 진입 시작<input id="kisDayFrom" type="time" value="09:05"></label>
-      <label class="kis-day">당일: 진입 마감<input id="kisDayTo" type="time" value="14:30"></label>
-      <label class="kis-day">당일: 전량 청산<input id="kisDayExit" type="time" value="15:15"></label>
-      <label class="kis-chk"><input type="checkbox" id="kisVix"> VIX 30 이상만 매수</label>
-      <label class="kis-chk"><input type="checkbox" id="kisSkipLosers"> 손실 반복 종목 제외</label>
-      <label>제외 기준(매도 횟수)<input id="kisLoserMin" type="number" step="1" value="2"></label>
-      <label>제외 기간(일)<input id="kisLoserDays" type="number" step="1" value="30"></label>
-      <button class="btn sm" id="kisSwingPreset" style="align-self:end" title="백테스트 결과 기반 추천값을 입력칸에 채웁니다(저장은 따로)">스윙 20일 추천값 채우기</button>
-      <button class="btn sm" id="kisSaveAuto" style="align-self:end">자동매매 설정 저장</button>
-      <span class="lbl" id="kisExpo" style="align-self:end"></span>
-    </div>
-    <p class="lbl" id="kisModeNote" style="margin:8px 0 0"></p>
+      <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="btn sm" id="kisAuto" aria-pressed="false">자동매매 켜기</button><button class="btn sm" id="kisOnce">1회 점검</button><span id="kisAutoSub" class="note" style="border:0;padding:0;margin:0"></span><span id="kisAutoEnv" class="env-badge env-demo">모의투자 계좌</span></span></div>
+<div class="ye-settings"><section class="ye-group"><h3>매매 전략</h3><p class="ye-help">오후 매수 후 다음날 보유 가능 · 당일 강제청산 없음</p><div class="ye-fields"><label>매매 방식<select id="kisMode"><option value="swing">보유형 · 다음날 보유 가능</option><option value="short">단기(1~5거래일)</option><option value="combo">단타 조합(검증 통과 기법)</option></select></label><label>매수 신호<select id="kisSignal"><option value="score">점수 합산</option><option value="trend">추세·모멘텀 상위</option><option value="box">1분봉 박스권 지지/저항</option></select></label><label>최대 보유일 · 0은 제한 없음<input id="kisHoldDays" type="number" step="1" min="0" max="60" value="0"></label><label class="kis-combo">단타 조합<select id="kisCombo"><option value="r2m">RSI2 눌림목 + 코스피 필터 (추천)</option><option value="h">RSI2(필터) + IBS 저점 반등</option><option value="r2">RSI2 눌림목 (필터 없음)</option></select></label></div></section><section class="ye-group"><h3>투자 한도</h3><p class="ye-help">한 종목에 쓸 금액과 전체 보유 한도입니다.</p><div class="ye-fields"><label>종목당 투자 비중 · %<input id="kisPos" type="number" step="1" value="10"></label><label>최대 보유 종목 수<input id="kisMaxH" type="number" step="1" value="5"></label><label>하루 매수 횟수<input id="kisMaxB" type="number" step="1" value="3"></label></div></section><section class="ye-group"><h3>손익 관리</h3><p class="ye-help">손절은 손실 제한, 익절은 수익 실현 기준입니다.</p><div class="ye-fields"><label>손절 기준 · %<input id="kisSL" type="number" step="1" value="-3"></label><label>익절 기준 · % (0은 해제)<input id="kisTP" type="number" step="1" value="10"></label><label class="kis-chk"><input type="checkbox" id="kisStopAny" checked> 장중 상시 손절</label></div></section><section class="ye-group"><h3>매매 시간</h3><p class="ye-help">오전은 시작 시각부터, 오후는 장 마감 15:30에서 거꾸로 계산합니다.</p><div class="ye-fields"><div class="ye-time-compact"><div class="ye-time-row"><b>오전</b><label><span>시작</span><input id="kisDayFrom" type="time" min="09:00" max="15:30" value="09:00"></label><label><span>동안</span><select id="kisMorningMinutes"><option value="5">5분</option><option value="10">10분</option><option value="15">15분</option><option value="20">20분</option><option value="30" selected>30분</option><option value="45">45분</option><option value="60">60분</option><option value="90">90분</option><option value="120">120분</option><option value="180">180분</option></select></label><small id="kisMorningEnd">09:00~09:30</small></div><div class="ye-time-row"><b>오후</b><label><span>장 마감 전</span><select id="kisAfternoonMinutes"><option value="5">5분</option><option value="10">10분</option><option value="15">15분</option><option value="20">20분</option><option value="30" selected>30분</option><option value="45">45분</option><option value="60">60분</option><option value="90">90분</option><option value="120">120분</option><option value="180">180분</option></select></label><small id="kisAfternoonEnd">15:00~15:30</small></div></div></div></section></div><details class="ye-advanced"><summary>고급 설정 <span>매수 필터·뉴스·반복 손실 제외</span></summary><div class="ye-settings"><section class="ye-group"><h3>매수 필터</h3><p class="ye-help">점수·장세·과매도 조건을 추가할 때만 조절하세요.</p><div class="ye-fields"><label>매수 임계점수<input id="kisScore" type="number" step="1" value="3"></label><label>장세 필터(신규 매수)<select id="kisRegime"><option value="off">끔</option><option value="basic">코스피 20일선 위</option><option value="strong">20일선 위 + 상승</option></select></label><label class="kis-chk"><input type="checkbox" id="kisVix"> VIX 30 이상만 매수</label><label class="kis-chk"><input type="checkbox" id="kisRsiBuy"> RSI 과매도 매수 <span class="lbl" id="kisRsiState"></span></label><label>RSI 기준(미만)<input id="kisRsiMax" type="number" step="1" value="30"></label></div></section><section class="ye-group"><h3>뉴스와 반복 손실</h3><p class="ye-help">기사 수는 사실검증이 아닙니다. 반복 손실 제외 기준은 함께 설정하세요.</p><div class="ye-fields"><label>뉴스 최소 건수(0=끔)<input id="kisNews" type="number" step="1" min="0" max="20" value="2"></label><label class="kis-chk"><input type="checkbox" id="kisSkipLosers"> 손실 반복 종목 제외</label><label>제외 기준(매도 횟수)<input id="kisLoserMin" type="number" step="1" value="2"></label><label>제외 기간(일)<input id="kisLoserDays" type="number" step="1" value="30"></label></div></section><section class="ye-group"><h3>기존 전략 보조 설정</h3><p class="ye-help">단타 조합의 실제 실행 시간은 위의 오전·오후 구간을 따릅니다.</p><div class="ye-fields"><label class="kis-combo">종가 매매 시작<input id="kisComboFrom" type="time" value="15:10"></label><label class="kis-combo">종가 매매 마감<input id="kisComboTo" type="time" value="15:18"></label></div></section></div><button class="btn sm" id="kisSwingPreset" style="align-self:end" title="백테스트 결과 기반 추천값을 입력칸에 채웁니다(저장은 따로)">스윙 20일 추천값 채우기</button></details><div class="ye-save"><span class="lbl" id="kisExpo" style="align-self:end"></span><button class="btn sm" id="kisSaveAuto" style="align-self:end">자동매매 설정 저장</button></div><details class="ye-advanced"><summary>매매 방식 설명과 주의사항</summary><p class="lbl" id="kisModeNote"></p></details>
     <div class="tv-list" id="kisLog" style="margin-top:10px"></div>
-    <p class="note" style="border:0;margin:10px 0 0;padding:0">자동매매는 앱 서버가 켜져 있는 동안에만 동작합니다. 신호는 앱과 동일한 전 종목 스캔(골든크로스·망치형·RSI·거래대금)을 쓰며, 임계점수 이상이면 매수하고 손절·익절·보유 기간·당일 청산 규칙으로 자동 매도합니다. 기간·당일 청산은 앱 매매일지에 매수 기록이 있는 종목에만 적용됩니다(직접 산 종목은 손절·익절만). 장 시간(09:00~15:30)에만 주문합니다.</p>
+<details class="ye-advanced"><summary>자동매매 작동 원리</summary>    <p class="note" style="border:0;margin:10px 0 0;padding:0">자동매매는 앱 서버가 켜져 있는 동안에만 동작합니다. 신호는 전 종목 스캔을 쓰며 <b>골든크로스는 보완 조건(20·60·120일선 우상향 + 거래대금 상위 + 5일선이 20일선 이탈했지만 60일선이 지지)을 모두 통과한 종목만</b> 인정됩니다. 뉴스 트래픽(최근 2일 구글뉴스 기사 수)은 07:00~11:30 사이 1시간 간격 수집해 최소 건수 이상인 종목만 매수하고, 많이 언급된 종목에 가점을 줍니다. 임계점수 이상이면 매수하고 손절·익절·보유 기간 규칙으로 자동 매도합니다. 기간 청산은 앱 매매일지에 매수 기록이 있는 종목에만 적용됩니다(직접 산 종목은 손절·익절만). 장 시간(09:00~15:30)에만 주문합니다. 자동매매는 <b>09:00~09:30과 15:00~15:30 두 구간 모두 매수·매도</b>합니다. 그 외 장중에는 상시 손절을 켠 경우 손절만 확인합니다. 단타 조합은 오전·오후 시간대별 1회 조건을 평가합니다. 기사 건수 필터는 뉴스 사실검증이 아닙니다. 매수 신호를 「1분봉 박스권 지지/저항」으로 바꾸면 박스권 지지 반등 종목을 사고 보유 중 저항 하락 시 익절합니다. 지금 연결된 계좌가 실전인지 모의인지는 화면 위쪽의 <b>실전 계좌/모의투자 계좌 배지</b>로 확인하고, 실전 계좌를 저장할 때는 확인창이 뜹니다.</p></details>
   </div>
 
   <div class="panel" style="margin-top:10px">
@@ -932,10 +973,12 @@ table.cbt .up{color:var(--hot)} table.cbt .dn{color:var(--cold)}
     <div class="sec-label" style="margin:12px 0 6px">섹터별 이력</div>
     <div class="kq-res" id="jnBySector"></div>
     <div class="sec-label" style="margin:12px 0 6px">백테스트 대조 · 실제 체결가 vs 백테스트 기준가(종가) <button class="btn sm" id="jnBenchRun" style="margin-left:6px">새로고침</button></div>
-    <div class="cbtwrap"><table class="cbt" id="jnBench"><thead><tr><th>전략</th><th>주문 수</th><th>체결가 기록</th><th>평균 차이</th><th>최대 차이</th><th>청산 건수</th><th>실제 거래당 평균</th><th>백테스트 거래당 평균</th><th>차이</th><th>실현손익</th><th>승률</th></tr></thead><tbody><tr><td colspan="11" class="lbl">매매일지를 불러오면 계산합니다</td></tr></tbody></table></div>
+    <div class="cbtwrap"><table class="cbt" id="jnBench"><thead><tr><th>전략</th><th>주문 수</th><th>체결가 기록</th><th>평균 차이</th><th>최대 차이</th><th>청산 건수</th><th>실제 거래당 평균</th><th>백테스트 거래당 평균</th><th>차이</th><th>손절 비율</th><th>실현손익</th><th>승률</th></tr></thead><tbody><tr><td colspan="12" class="lbl">매매일지를 불러오면 계산합니다</td></tr></tbody></table></div>
     <p class="lbl" id="jnBenchNote" style="margin:6px 0 0"></p>
     <div class="sec-label" style="margin:12px 0 6px">월별 손익 리포트 <button class="btn sm" id="jnCsvMonthly" style="margin-left:6px">월간 CSV</button></div>
     <div class="kq-res" id="jnMonthly"></div>
+    <div class="sec-label" style="margin:12px 0 6px">1분봉 박스권 스캔 <span style="font-weight:700;color:var(--mute)">(거래대금 상위 30종목 · Yahoo 1분봉 · 60초 캐시)</span></div>
+    <div id="kisBox"><div class="krx-empty">YE 매매 탭을 열면 스캔합니다</div></div>
     <div class="sec-label" style="margin:12px 0 6px">손실 반복 종목 <span style="font-weight:700;color:var(--mute)">(매도 2회 이상 &amp; 누적 손실 · 자동매매 제외 대상)</span></div>
     <div class="kq-res" id="jnLosers"></div>
     <p class="note" style="border:0;margin:10px 0 0;padding:0">매수·매도 1건마다 시각·종목·수량·단가·사유가 기록됩니다. <b>같은 종목이나 같은 섹터를 다시 매매하면 이전 횟수를 함께 남겨</b> 이력으로 추적할 수 있습니다. 매도 시 실현손익은 일지의 평균단가 기준으로 계산합니다. 섹터는 앱이 추적하는 종목은 지정 섹터로, 그 밖의 종목은 미분류로 표시됩니다.</p>
@@ -1977,8 +2020,8 @@ setInterval(tvDailyCheck,5*60*1000);
 
 // ── 섹션 격리 캡처 지원(sym/tv) ─────────────
 (()=>{const ov=new URLSearchParams(location.search).get('only');
-const keep={sym:'symBar',tv:'tvSec',krx:'krxSec',ibt:'ibtPanel',sbt:'sbtPanel'}[ov]
-if(keep==='ibtPanel'||keep==='sbtPanel'){ document.querySelectorAll('body>main,body>section,.favbar,header,.topbar').forEach(e=>{ if(!e.querySelector('#'+keep)) e.style.display='none'; else { e.style.display=''; Array.from(e.children).forEach(c=>{ if(c.id!==keep) c.style.display='none'; }); } }); }
+const keep={sym:'symBar',tv:'tvSec',krx:'krxSec',ibt:'ibtPanel',sbt:'sbtPanel',gcbt:'gcbtPanel'}[ov]
+if(keep==='ibtPanel'||keep==='sbtPanel'||keep==='gcbtPanel'){ document.querySelectorAll('body>main,body>section,.favbar,header,.topbar').forEach(e=>{ if(!e.querySelector('#'+keep)) e.style.display='none'; else { e.style.display=''; Array.from(e.children).forEach(c=>{ if(c.id!==keep) c.style.display='none'; }); } }); }
 else if(keep){document.querySelectorAll('section').forEach(sec=>{if(!(sec.id===keep||sec.querySelector('#'+keep)))sec.style.display='none'});
 document.querySelectorAll('header,.hero,h1,.topbar').forEach(e=>{try{e.style.display='none'}catch(_){}});try{window.scrollTo(0,0);document.body.style.paddingTop='0'}catch(_){}}})();
 
@@ -2158,11 +2201,31 @@ syncGcBtn();
 function kisPin(){ return localStorage.getItem('kis_pin')||''; }
 function kisMsg(el,m,ok){ const e=$(el); if(e){ e.textContent=m||''; e.style.color=ok===false?css('--hot'):ok===true?css('--cool'):''; } }
 async function kisFetch(path,opt){ opt=opt||{}; opt.headers=Object.assign({},opt.headers||{},{'x-trade-pin':kisPin()}); const r=await fetch(path,opt); let j; try{ j=await r.json(); }catch(e){ j={ok:false,msg:'응답 오류'}; } return j; }
+async function loadBox(){
+  const j=await fetch('/api/kis/boxlist').then(r=>r.json()).catch(()=>({ok:false}));
+  const box=$('kisBox'); if(!box) return;
+  if(!j.ok){ box.innerHTML='<div class="krx-empty">'+(j.msg||'스캔 실패')+'</div>'; return; }
+  const rows=j.rows||[];
+  if(!rows.length){ box.innerHTML='<div class="krx-empty">박스권 종목이 없습니다</div>'; return; }
+  box.innerHTML=rows.slice(0,12).map(function(b){ var sig=b.buySig?'<span style="color:var(--hot);font-weight:700">지지 반등 · 매수 후보</span>':b.sellSig?'<span style="color:var(--cold);font-weight:700">저항 하락 · 익절 대상</span>':'<span style="color:var(--mute)">박스 중간</span>';
+    return '<div class="kq-row"><div><div class="kq-nm">'+b.name+' <span class="kq-code">'+b.code+'</span></div><div class="kq-sub">지지 '+Number(b.support).toLocaleString('ko-KR')+' · 저항 '+Number(b.resistance).toLocaleString('ko-KR')+' · 박스폭 '+b.boxPct+'% · 현재가 '+Number(b.price).toLocaleString('ko-KR')+'</div></div><div class="kq-px">'+sig+'</div></div>'; }).join('')
+    +'<div class="note" style="border:0;padding:0">박스권 = 1분봉 약 180개 창에서 고가·저가 폭 4.5% 이하 + 지지·저항 터치 각 2회 이상. 매수 신호는 지지 근처(±0.6%) 상승 마감, 익절 신호는 저항 근처 하락 마감입니다. Yahoo 1분봉은 지연이 있을 수 있습니다.</div>';
+}
+function yeSetMinutes(id,n){var el=$(id);if(!el)return;if(!Array.from(el.options).some(function(o){return +o.value===+n;})){el.add(new Option(n+'분',n));}el.value=n;}
+function yeTimeSummary(){
+  var fmt=function(m){return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');};
+  var p=$('kisDayFrom').value.split(':'),am=+p[0]*60+(+p[1]),n=+$('kisMorningMinutes').value,pm=+$('kisAfternoonMinutes').value;
+  $('kisMorningEnd').textContent=fmt(am)+'~'+fmt(Math.min(930,am+n));
+  $('kisAfternoonEnd').textContent=fmt(930-pm)+'~15:30';
+}
+['kisDayFrom','kisMorningMinutes','kisAfternoonMinutes'].forEach(function(id){if($(id))$(id).addEventListener('change',yeTimeSummary);});
 async function loadKis(){
   try{
     const st=await fetch('/api/kis/status').then(r=>r.json());
     window.__kis=st;
     if($('kisSub'))$('kisSub').textContent=`한국투자증권 KIS · ${st.env==='real'?'실전투자':'모의투자'}${st.dry?' · DRY-RUN':''}${st.hasPin?' · PIN 설정됨':' · PIN 미설정'}`;
+    envBadgePaint(st);
+    if(typeof loadBox==='function') loadBox();
     if($('kisState'))$('kisState').textContent=st.configured?'연결됨 ('+st.account+')':'미설정';
     if($('kisEnv'))$('kisEnv').value=st.env;
     if($('kisDry'))$('kisDry').checked=!!st.dry;
@@ -2174,11 +2237,14 @@ async function loadKis(){
     if($('kisMode'))$('kisMode').value=A.mode||'swing'; if($('kisSignal'))$('kisSignal').value=A.signal||'score'; if($('kisRegime'))$('kisRegime').value=A.regime||'off'; if($('kisHoldDays'))$('kisHoldDays').value=A.holdDays||0;
     if($('kisRsiBuy'))$('kisRsiBuy').checked=!!A.rsiBuy; if($('kisRsiMax'))$('kisRsiMax').value=A.rsiMax||30;
     if($('kisCombo'))$('kisCombo').value=A.combo||'r2m'; if($('kisComboFrom'))$('kisComboFrom').value=A.comboFrom||'15:10'; if($('kisComboTo'))$('kisComboTo').value=A.comboTo||'15:18';
-    if($('kisDayFrom'))$('kisDayFrom').value=A.dayEntryFrom||'09:05'; if($('kisDayTo'))$('kisDayTo').value=A.dayEntryTo||'14:30'; if($('kisDayExit'))$('kisDayExit').value=A.dayExitAt||'15:15';
+    if($('kisDayFrom'))$('kisDayFrom').value=A.dayEntryFrom||'09:00';
+    yeSetMinutes('kisMorningMinutes',A.morningMinutes||30); yeSetMinutes('kisAfternoonMinutes',A.afternoonMinutes||30); yeTimeSummary();
     kisModeUI();
+    if($('kisStopAny'))$('kisStopAny').checked=A.stopAnytime==1;
     if($('kisSkipLosers'))$('kisSkipLosers').checked=!!A.skipLosers;
     if($('kisLoserMin'))$('kisLoserMin').value=A.loserMinSells||2;
     if($('kisLoserDays'))$('kisLoserDays').value=(A.loserBlockDays==null?30:A.loserBlockDays);
+    if($('kisNews'))$('kisNews').value=(A.newsMin==null?2:A.newsMin);
     const b=$('kisAuto'); if(b){ b.setAttribute('aria-pressed',A.on?'true':'false'); b.textContent=A.on?'자동매매 끄기':'자동매매 켜기'; }
     if($('kisAutoSub'))$('kisAutoSub').textContent=A.on?`작동 중 · ${A.loopSeconds}s 주기`:'꺼짐';
     if(st.hasPin && st.configured){ await kisBalance(); await kisLog(); await loadJournal(); if(typeof loadBench==='function') await loadBench(); }
@@ -2196,10 +2262,14 @@ async function kisLog(){ const j=await kisFetch('/api/kis/log'); if(!j.ok||!$('k
   const rows=(j.log||[]).slice(-20).reverse();
   $('kisLog').innerHTML=rows.map(l=>'<div class="tv-row"><span class="tv-rank">·</span><span><span class="tv-name">'+(l.kind||'')+'</span><span class="tv-sub">'+(l.name?l.name+' ':'')+(l.code||'')+(l.qty?' '+l.qty+'주':'')+(l.msg?' · '+l.msg:'')+(l.note?' · '+l.note:'')+(l.score!=null?' · 점수'+l.score:'')+'</span></span><span class="tv-val">'+String(l.t||'').slice(11,19)+'</span></div>').join('')||'<div class="tv-row"><span class="tv-rank">–</span><span class="tv-name">기록이 없습니다</span><span class="tv-val">--</span></div>';
 }
+function envBadgePaint(st){ var real=st&&st.env==='real', txt=real?(st.dry?'실전 계좌 · DRY-RUN(주문 안 나감)':'실전 계좌 · 실제 주문 나감'):'모의투자 계좌 · 실제 주문 안 나감', cls=real?'env-badge env-real':'env-badge env-demo';
+  var b=$('kisEnvBadge'); if(b){ b.className=cls; b.textContent=txt; }
+  var a=$('kisAutoEnv'); if(a){ a.className=cls; a.textContent=real?(st.dry?'실전 · DRY-RUN':'실전 계좌'):'모의투자 계좌'; } }
 if($('kisSave'))$('kisSave').onclick=async()=>{
   const body={ pin:$('kisPin').value.trim()||undefined, appKey:$('kisAppKey').value.trim()||undefined, appSecret:$('kisAppSec').value.trim()||undefined,
     account:$('kisAcct').value.trim()||undefined, product:$('kisProd').value.trim()||undefined, env:$('kisEnv').value,
     dry:$('kisDry').checked, allowLive:$('kisAllow').checked };
+  if(body.env==='real'&&!body.dry&&!confirm('실전 계좌에 실제 주문이 나갑니다. 저장할까요?'))return;
   if(body.pin) localStorage.setItem('kis_pin',body.pin);
   const r=await fetch('/api/kis/setup',{method:'POST',headers:{'content-type':'application/json','x-trade-pin':kisPin()},body:JSON.stringify(body)});
   const j=await r.json().catch(()=>({ok:false,msg:'응답 오류'}));
@@ -2219,28 +2289,28 @@ async function kisOrder(side){
   loadKis();
 }
 // 매매 방식 프리셋(방식을 바꾸면 손절·익절·보유 기간을 기본값으로 채움 — 저장 전 수정 가능)
-var KIS_MODE_PRESET={swing:{sl:-5,tp:10,hd:0,sg:'score'},short:{sl:-3,tp:4,hd:3,sg:'trend'},day:{sl:-1.5,tp:2,hd:0,sg:'trend'},combo:{sl:0,tp:0,hd:0,sg:'score'}};
+var KIS_MODE_PRESET={swing:{sl:-3,tp:10,hd:0,sg:'score'},short:{sl:-3,tp:4,hd:3,sg:'trend'},day:{sl:-3,tp:2,hd:0,sg:'trend'},combo:{sl:-3,tp:0,hd:0,sg:'score'}};
 function kisRsiOk(){ return ($('kisMode')&&$('kisMode').value)==='swing' && +$('kisHoldDays').value>=10 && +$('kisHoldDays').value<=20; }
 function kisModeUI(){ if(!$('kisMode'))return; var m=$('kisMode').value, ok=kisRsiOk();
-  document.querySelectorAll('.kis-day').forEach(function(e){ e.style.display=m==='day'?'':'none'; });
+  document.querySelectorAll('.kis-day').forEach(function(e){ e.style.display=m==='combo'?'none':''; });
   document.querySelectorAll('.kis-combo').forEach(function(e){ e.style.display=m==='combo'?'':'none'; });
-  if($('kisHoldDays')){ $('kisHoldDays').disabled=m==='day'||m==='combo'; } if($('kisSignal')) $('kisSignal').disabled=m==='combo';
+  if($('kisHoldDays')){ $('kisHoldDays').disabled=m==='combo'; } if($('kisSignal')) $('kisSignal').disabled=m==='combo';
   if($('kisRsiBuy')){ $('kisRsiBuy').disabled=!ok; } if($('kisRsiState')) $('kisRsiState').textContent=ok?'(사용 가능)':'(스윙 + 보유 10~20일일 때만)';
   var t={swing:'스윙: 손절·익절로 청산하고, 보유 기간을 넣으면 그 거래일이 지나면 정리합니다. RSI 과매도 매수는 보유 10~20거래일일 때만 켜집니다(백테스트에서 5일 이하 보유는 우위 없음).',
     short:'단기: 기본 신호는 <b>추세·모멘텀 상위</b>이고, 보유 기간(기본 3거래일)이 지나면 손익과 관계없이 매도합니다. 백테스트(상위 200, 수수료 0.3%, 3일 보유): 추세·모멘텀 상위 10 <b>+441%</b>(전체 평균 +280%, 점수 상위 10 +102%) — 단 최대 낙폭 −53.6%로 매우 큽니다. 장세 필터(코스피 20일선 위일 때만 신규 매수)를 켜면 낙폭은 −38.4%로 줄지만 누적 수익도 +156%로 줄어 전체 평균보다 낮아집니다.',
-    combo:'단타 조합: 매일 <b>종가 매매 시간(기본 15:10~15:18)에 1회</b> 청산과 신규 매수를 처리합니다. RSI2 눌림목은 종가가 5일선 위로 오르거나 5거래일이 지나면, IBS 저점 반등은 다음 거래일에 매도합니다. 앱이 이 방식으로 산 종목만 청산하고, 손절은 설정한 경우(0=없음)에만 장중 확인합니다. 백테스트(약 21개월, 상위 200, 수수료 0.3%): RSI2+코스피 필터 <b>+213.5%·최대 낙폭 −19.3%</b>, 조합 H +210.3%·−25.6% (코스피 +166.3%·−38.6%). 실제 체결은 15:20 종가 동시호가 전이라 백테스트 종가와 다를 수 있습니다.',
-    day:'당일: 기본 신호는 추세·모멘텀 상위이고, 정해진 시간에만 새로 사고 청산 시각에 앱으로 산 종목을 전량 매도합니다. <b>5분봉 장중 백테스트(최근 약 60거래일, 수수료 0.3%)에서 손절 −1.5%·익절 +2%는 모든 전략이 손실</b>이었고, 손절·익절 값이나 종목 수를 바꾸면 결과가 손실과 수익을 오갔습니다. 아래 국내 탭의 「당일 매매 장중 백테스트」를 확인하고 DRY-RUN·모의투자로만 써 보세요.'}[m];
-  if($('kisModeNote'))$('kisModeNote').innerHTML='⚠ '+t+' 자동매매 판단은 1분 주기라 청산 시각에서 최대 1분 늦을 수 있습니다. 투자 권유가 아닙니다.'; }
+    combo:'단타 조합: <b>오전·오후 매매 시간대별 1회</b> 청산과 신규 매수를 평가합니다. 기존 종가 전략과 실행 시간이 달라 기존 백테스트 결과를 그대로 적용할 수 없습니다. RSI2 눌림목은 종가가 5일선 위로 오르거나 5거래일이 지나면, IBS 저점 반등은 다음 거래일에 매도합니다. 앱이 이 방식으로 산 종목만 청산하고, 손절은 설정한 경우(0=없음)에만 장중 확인합니다. 백테스트(약 21개월, 상위 200, 수수료 0.3%): RSI2+코스피 필터 <b>+213.5%·최대 낙폭 −19.3%</b>, 조합 H +210.3%·−25.6% (코스피 +166.3%·−38.6%). 실제 체결은 15:20 종가 동시호가 전이라 백테스트 종가와 다를 수 있습니다.',
+    day:'당일: 기본 신호는 추세·모멘텀 상위이고, <b>장 시작 30분(기본 09:00~09:30)에만 새로 사고</b> 15:00(장 마감 30분 전, 기본)부터 앱으로 산 종목을 전량 매도합니다. 손절·익절은 장중에도 확인합니다. <b>5분봉 장중 백테스트(최근 약 60거래일, 수수료 0.3%)에서 손절 −1.5%·익절 +2%는 모든 전략이 손실</b>이었고, 손절·익절 값이나 종목 수를 바꾸면 결과가 손실과 수익을 오갔습니다. 아래 국내 탭의 「당일 매매 장중 백테스트」를 확인하고 DRY-RUN·모의투자로만 써 보세요.'}[m];
+  if($('kisModeNote'))$('kisModeNote').innerHTML='⚠ '+t+' <b>09:00~09:30과 15:00~15:30 두 시간대 모두 조건 충족 시 매수·매도합니다.</b> 단타 조합은 시간대별 1회 평가합니다. 오후에 산 종목도 다음 거래일까지 보유할 수 있습니다. 장 마감만으로 강제 매도하지 않습니다. <b>장중 상시 손절</b>을 켜면 손절만 장중에도 1분마다 확인합니다(익절·기간 청산은 청산 창 그대로). 자동매매 판단은 1분 주기라 청산 시각에서 최대 1분 늦을 수 있습니다. 투자 권유가 아닙니다.'; }
 if($('kisMode'))$('kisMode').onchange=function(){ var p=KIS_MODE_PRESET[$('kisMode').value]; if(p){ $('kisSL').value=p.sl; $('kisTP').value=p.tp; $('kisHoldDays').value=p.hd; if($('kisSignal'))$('kisSignal').value=p.sg; } kisModeUI(); };
 if($('kisHoldDays'))$('kisHoldDays').oninput=kisModeUI;
 function kisExpo(){ var e=$('kisExpo'); if(!e||!$('kisPos'))return; var x=(+$('kisPos').value||0)*(+$('kisMaxH').value||0); e.innerHTML='최대 투자 비중 <b>'+x+'%</b> (종목당 '+$('kisPos').value+'% × 최대 '+$('kisMaxH').value+'종목)'+(x>100?' · <span class="dn">100% 초과 — 현금 부족 시 일부만 매수</span>':''); }
 ['kisPos','kisMaxH'].forEach(function(id){ if($(id)) $(id).addEventListener('input',kisExpo); }); setTimeout(kisExpo,300);
 if($('kisSwingPreset'))$('kisSwingPreset').onclick=function(){
-  $('kisMode').value='swing'; $('kisSignal').value='trend'; $('kisHoldDays').value=20; $('kisSL').value=-5; $('kisTP').value=0; $('kisPos').value=10; $('kisMaxH').value=5; if($('kisRegime'))$('kisRegime').value='off'; if($('kisRsiBuy'))$('kisRsiBuy').checked=false;
-  kisModeUI(); kisExpo(); kisMsg('kisMsg','추천값을 채웠습니다(아직 저장 안 됨): 스윙 · 추세·모멘텀 상위 · 보유 20거래일 · 손절 −5% · 익절 없음(0) · 종목당 10% × 5종목 = 투자 비중 50%. 백테스트(상위 200, 수수료 0.3%): 누적 +84.1%, 최대 낙폭 −8.2%. 확인 후 「자동매매 설정 저장」을 누르세요.',true); };
+  $('kisMode').value='swing'; $('kisSignal').value='trend'; $('kisHoldDays').value=20; $('kisSL').value=-3; $('kisTP').value=0; $('kisPos').value=10; $('kisMaxH').value=5; if($('kisRegime'))$('kisRegime').value='off'; if($('kisRsiBuy'))$('kisRsiBuy').checked=false;
+  kisModeUI(); kisExpo(); kisMsg('kisMsg','추천값을 채웠습니다(아직 저장 안 됨): 스윙 · 추세·모멘텀 상위 · 보유 20거래일 · 손절 −3% · 익절 없음(0) · 종목당 10% × 5종목 = 투자 비중 50%. 백테스트(상위 200, 수수료 0.3%): 누적 +84.1%, 최대 낙폭 −8.2%. 확인 후 「자동매매 설정 저장」을 누르세요.',true); };
 setTimeout(kisModeUI,0);
 if($('kisSaveAuto'))$('kisSaveAuto').onclick=async()=>{
-  const q='mode='+$('kisMode').value+'&combo='+$('kisCombo').value+'&comboFrom='+$('kisComboFrom').value+'&comboTo='+$('kisComboTo').value+'&signal='+$('kisSignal').value+'&regime='+$('kisRegime').value+'&holdDays='+$('kisHoldDays').value+'&rsiBuy='+($('kisRsiBuy').checked&&kisRsiOk()?'1':'0')+'&rsiMax='+$('kisRsiMax').value+'&dayEntryFrom='+$('kisDayFrom').value+'&dayEntryTo='+$('kisDayTo').value+'&dayExitAt='+$('kisDayExit').value+'&buyScoreMin='+$('kisScore').value+'&positionPct='+$('kisPos').value+'&maxHoldings='+$('kisMaxH').value+'&maxBuysPerDay='+$('kisMaxB').value+'&stopLossPct='+$('kisSL').value+'&takeProfitPct='+$('kisTP').value+'&requireVix30='+($('kisVix').checked?'1':'0')+'&skipLosers='+($('kisSkipLosers').checked?'1':'0')+'&loserMinSells='+$('kisLoserMin').value+'&loserBlockDays='+$('kisLoserDays').value;
+  const q='mode='+$('kisMode').value+'&combo='+$('kisCombo').value+'&comboFrom='+$('kisComboFrom').value+'&comboTo='+$('kisComboTo').value+'&signal='+$('kisSignal').value+'&regime='+$('kisRegime').value+'&holdDays='+$('kisHoldDays').value+'&rsiBuy='+($('kisRsiBuy').checked&&kisRsiOk()?'1':'0')+'&rsiMax='+$('kisRsiMax').value+'&dayEntryFrom='+$('kisDayFrom').value+'&morningMinutes='+$('kisMorningMinutes').value+'&afternoonMinutes='+$('kisAfternoonMinutes').value+'&buyScoreMin='+$('kisScore').value+'&positionPct='+$('kisPos').value+'&maxHoldings='+$('kisMaxH').value+'&maxBuysPerDay='+$('kisMaxB').value+'&stopLossPct='+$('kisSL').value+'&takeProfitPct='+$('kisTP').value+'&requireVix30='+($('kisVix').checked?'1':'0')+'&stopAnytime='+($('kisStopAny').checked?'1':'0')+'&skipLosers='+($('kisSkipLosers').checked?'1':'0')+'&loserMinSells='+$('kisLoserMin').value+'&loserBlockDays='+$('kisLoserDays').value+'&newsMin='+$('kisNews').value;
   const j=await kisFetch('/api/kis/auto?'+q); kisMsg('kisMsg', j.ok?('자동매매 설정을 저장했습니다.'+(j.warn?' '+j.warn:'')):(j.msg||'실패'), j.ok); loadKis();
 };
 if($('kisAuto'))$('kisAuto').onclick=async()=>{
@@ -2346,6 +2416,8 @@ try{
   if(__qt==='coin'||__lt==='coin'){ setTimeout(function(){ try{ renderCoinPicks(); }catch(e){} }, 300); }
 }catch(e){}
 window.onTabShown=function(t){ if(t==='live'){ loadKis(); loadJournal(); } if(t==='coin'){ try{ renderCoinPicks(); }catch(e){} } };
+// 계좌 배지(실전/모의)는 탭과 관계없이 페이지를 열 때 바로 채움
+fetch('/api/kis/status').then(r=>r.json()).then(st=>envBadgePaint(st)).catch(()=>{});
 
 // ── 매매일지 ─────────────────────────────────
 let jnSeen=null;
@@ -2360,13 +2432,14 @@ var JNB={data:null};
 var BT_NAME={r2m:'RSI2 눌림목 + 코스피 20일선 위',r2:'RSI2 눌림목 (60일선 위, 1~5일)',ibs:'IBS 종가 저점 반등 (60일선 위, 종가→다음 날 종가)'};
 function btAvg(tag){ if(typeof SBT==='undefined'||!SBT.data) return null; var nm=BT_NAME[tag]; if(!nm) return null;
   var r=(SBT.data.techs||[]).concat(SBT.data.combos||[]).filter(function(x){return x.name===nm;})[0]; return r?r.avgTrade:null; }
-async function loadBench(){ var j=await kisFetch('/api/kis/bench'); if(!j.ok) return; JNB.data=j.rows; jnbPaint(); }
+async function loadBench(){ var j=await kisFetch('/api/kis/bench'); if(!j.ok) return; JNB.data=j.rows; GCE=j.gcExpect||null; jnbPaint(); }
+var GCE=null;
 function jnbPaint(){ var box=document.querySelector('#jnBench tbody'); if(!box) return; var R=JNB.data||[];
   var f=function(v,dg){ return v==null?'--':'<span class="'+(v>=0?'up':'dn')+'">'+(v>=0?'+':'')+v.toFixed(dg==null?2:dg)+'%</span>'; };
-  if(!R.length){ box.innerHTML='<tr><td colspan="11" class="lbl">아직 주문 기록이 없습니다. 모의투자나 DRY-RUN을 돌리면 여기에 쌓입니다.</td></tr>'; if($('jnBenchNote'))$('jnBenchNote').textContent=''; return; }
+  if(!R.length){ box.innerHTML='<tr><td colspan="12" class="lbl">아직 주문 기록이 없습니다. 모의투자나 DRY-RUN을 돌리면 여기에 쌓입니다.</td></tr>'; if($('jnBenchNote'))$('jnBenchNote').textContent=''; return; }
   box.innerHTML=R.map(function(r){ var bt=btAvg(r.tag), d=(r.avgPnlPct!=null&&bt!=null)?+(r.avgPnlPct-bt).toFixed(3):null;
-    return '<tr><td>'+cpEsc(r.tag)+(BT_NAME[r.tag]?' <span class="lbl">단타 조합</span>':'')+'</td><td>'+r.trades+'</td><td>'+r.filled+(r.noFill?' <span class="lbl">미기록 '+r.noFill+'</span>':'')+'</td><td>'+(r.avgSlip==null?'--':f(r.avgSlip,2))+'</td><td>'+(r.worstSlip==null?'--':f(r.worstSlip,2))+'</td><td>'+r.closed+'</td><td>'+(r.avgPnlPct==null?'--':f(r.avgPnlPct,2))+'</td><td>'+(bt==null?'--':f(bt,2))+'</td><td>'+(d==null?'--':f(d,2))+'</td><td>'+(r.realized>=0?'<span class="up">+'+r.realized.toLocaleString()+'</span>':'<span class="dn">'+r.realized.toLocaleString()+'</span>')+'</td><td>'+(r.winRate==null?'--':r.winRate+'%')+'</td></tr>'; }).join('');
-  if($('jnBenchNote'))$('jnBenchNote').innerHTML='「평균 차이」 = 실제 체결가가 백테스트 기준가(종가)보다 평균 몇 % 높거나 낮았는지입니다. <b>+면 백테스트보다 비싸게 샀다</b>는 뜻이고, 그만큼 실제 성과가 백테스트보다 나빠집니다. 매수는 잔고의 매입평균가, 매도는 증권사 체결내역에서 읽습니다(조회 실패 시 「미기록」). 「백테스트 거래당 평균」은 국내 탭의 <b>단타 기법 추천·조합 백테스트</b>를 먼저 계산하면 채워집니다. DRY-RUN은 실제 체결이 없어 차이를 기록하지 않습니다.'; }
+    return '<tr><td>'+cpEsc(r.tag)+(BT_NAME[r.tag]?' <span class="lbl">단타 조합</span>':'')+'</td><td>'+r.trades+'</td><td>'+r.filled+(r.noFill?' <span class="lbl">미기록 '+r.noFill+'</span>':'')+'</td><td>'+(r.avgSlip==null?'--':f(r.avgSlip,2))+'</td><td>'+(r.worstSlip==null?'--':f(r.worstSlip,2))+'</td><td>'+r.closed+'</td><td>'+(r.avgPnlPct==null?'--':f(r.avgPnlPct,2))+'</td><td>'+(bt==null?'--':f(bt,2))+'</td><td>'+(d==null?'--':f(d,2))+'</td><td>'+(r.stopRate==null?'--':r.stopRate+'%')+'</td><td>'+(r.realized>=0?'<span class="up">+'+r.realized.toLocaleString()+'</span>':'<span class="dn">'+r.realized.toLocaleString()+'</span>')+'</td><td>'+(r.winRate==null?'--':r.winRate+'%')+'</td></tr>'; }).join('');
+  if($('jnBenchNote'))$('jnBenchNote').innerHTML='「평균 차이」 = 실제 체결가가 백테스트 기준가(종가)보다 평균 몇 % 높거나 낮았는지입니다. <b>+면 백테스트보다 비싸게 샀다</b>는 뜻이고, 그만큼 실제 성과가 백테스트보다 나빠집니다. 매수는 잔고의 매입평균가, 매도는 증권사 체결내역에서 읽습니다(조회 실패 시 「미기록」). 「백테스트 거래당 평균」은 국내 탭의 <b>단타 기법 추천·조합 백테스트</b>를 먼저 계산하면 채워집니다. 「손절 비율」 = 청산 중 사유가 손절인 비율 — 보완 골든크로스 백테스트(20일 보유·손절 −3%) 기대값 <b>49%</b>와 비교해 보세요. DRY-RUN은 실제 체결이 없어 차이를 기록하지 않습니다.'; }
 if($('jnBenchRun'))$('jnBenchRun').onclick=loadBench;
 setTimeout(function(){ if(typeof loadBench==='function'&&$('jnBench')) loadBench(); },1500);
 async function loadJournal(){
@@ -2501,6 +2574,27 @@ document.addEventListener('click',function(e){
   var ub=e.target.closest&&e.target.closest('#krbtUni button'); if(ub){ KRBT.uni=+ub.dataset.u; document.querySelectorAll('#krbtUni button').forEach(function(x){x.setAttribute('aria-pressed',x===ub);}); krbtRun(); return; }
   var hb=e.target.closest&&e.target.closest('#krbtHold button'); if(hb){ KRBT.hold=+hb.dataset.h; document.querySelectorAll('#krbtHold button').forEach(function(x){x.setAttribute('aria-pressed',x===hb);}); krbtRun(); }
 });
+// ── 골든크로스 보완 백테스트 ─────────────
+var GCBT={hold:10,fee:0.3,data:null,busy:false,started:false};
+function gcbtRun(){ if(GCBT.busy) return; GCBT.busy=true; GCBT.started=true; var b=document.getElementById('gcbtRun'); if(b){ b.disabled=true; b.textContent='계산 중…'; }
+  var tb=document.querySelector('#gcbtTable tbody'); if(tb&&!GCBT.data) tb.innerHTML='<tr><td colspan="10" class="lbl">2년치 일봉을 받아 계산하는 중… (처음 1회 약 20초)</td></tr>';
+  fetch('/api/gcbt?hold='+GCBT.hold+'&fee='+GCBT.fee).then(function(r){return r.json();}).then(function(d){ if(d.error) throw new Error(d.error); GCBT.data=d; gcbtPaint(); })
+  .catch(function(e){ if(tb) tb.innerHTML='<tr><td colspan="10" class="lbl">실패: '+cpEsc(e&&e.message||e)+'</td></tr>'; })
+  .finally(function(){ GCBT.busy=false; if(b){ b.disabled=false; b.textContent='계산'; } }); }
+function gcbtPaint(){ var d=GCBT.data; if(!d) return; var R=d.results, cols=cbtCols();
+  var f=function(v,dg){ return v==null?'--':'<span class="'+(v>=0?'up':'dn')+'">'+(v>=0?'+':'')+v.toFixed(dg==null?1:dg)+'%</span>'; };
+  document.getElementById('gcbtSub').textContent=d.from+' ~ '+d.to+' ('+d.n+'회 리밸런싱) · 거래대금 상위 '+d.universe+' 중 2년 데이터 '+d.stocks+'종목 · 수수료 왕복 '+d.fee+'%';
+  var best=R.filter(function(r){return r.n>=20;}).reduce(function(a,r){ return (r.total/Math.max(1,-r.mdd))>(a?a.total/Math.max(1,-a.mdd):-1e9)?r:a; },null);
+  document.querySelector('#gcbtTable tbody').innerHTML=R.map(function(r,i){ return '<tr class="'+(r===best?'best':'')+'"><td><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+cols[i%cols.length]+';margin-right:6px"></i>'+cpEsc(r.name)+(r===best?' 🏆':'')+'</td><td>'+f(r.total)+'</td><td>'+r.n.toLocaleString()+'</td><td>'+r.periods+'/'+d.n+'</td><td>'+f(r.avg,2)+'</td><td>'+(r.excess==null?'--':'<span class="'+(r.excess>=0?'up':'dn')+'">'+(r.excess>=0?'+':'')+r.excess.toFixed(2)+'%p</span>')+'</td><td>'+(r.hit==null?'--':r.hit+'%')+'</td><td>'+r.invested+'%</td><td>'+(r.sharpe==null?'--':r.sharpe.toFixed(2))+'</td><td><span class="dn">'+r.mdd.toFixed(1)+'%</span></td></tr>'; }).join('')
+    +'<tr><td>비교: 유동성 상위 200 전체 동일비중</td><td>'+f(d.univ.total)+'</td><td></td><td></td><td></td><td></td><td></td><td>100%</td><td></td><td></td></tr>'
+    +'<tr><td>비교: 코스피 지수</td><td>'+f(d.kospi.total)+'</td><td></td><td></td><td></td><td></td><td></td><td>100%</td><td></td><td></td></tr>';
+  var rk=document.querySelector('#gcbtRisk tbody'); if(rk&&d.risk){ var bc=d.risk.reduce(function(a,r){ return (r.calmar||-99)>((a&&a.calmar)||-99)?r:a; },null);
+    rk.innerHTML=d.risk.map(function(r){ return '<tr class="'+(r===bc?'best':'')+'"><td>'+r.exposure+'%'+(r.exposure<100?' <span class="lbl">나머지 현금</span>':'')+'</td><td>'+(r.stop==null?'없음':r.stop+'%')+(r===bc?' 🏆':'')+'</td><td>'+f(r.total)+'</td><td>'+(r.sharpe==null?'--':r.sharpe.toFixed(2))+'</td><td><span class="dn">'+r.mdd.toFixed(1)+'%</span></td><td>'+r.stopRate+'%</td><td>'+(r.calmar==null?'--':r.calmar.toFixed(1))+'</td></tr>'; }).join('');
+    var nr=document.getElementById('gcbtRiskNote'); if(nr) nr.innerHTML='「누적/낙폭」 = 누적 수익 ÷ 최대 낙폭 (클수록 같은 낙폭에서 더 벌었음). 🏆 = 이 값 최고. 손절은 매 거래일 <b>종가</b>로 확인해 닿으면 그 종가에 팔고 다음 신호일까지 현금으로 둡니다(실제 자동매매는 1분마다 장중 가격으로 확인하므로 더 자주 손절될 수 있음). 투자 비중 50% = 자동매매 종목당 10% × 최대 5종목 기준.'; }
+  document.getElementById('gcbtNote').innerHTML='🏆 = 20건 이상 발생한 규칙 중 「누적 ÷ 최대 낙폭」 최고. 「같은 시점 평균 대비」는 신호가 걸린 날 유동성 상위 200 전체 평균보다 얼마나 더 올랐는지(%p)입니다. 보완 조건의 <b>뉴스 기사 수는 과거 데이터가 없어 이 비교에 포함되지 않았습니다</b> — 뉴스 필터 효과는 검증되지 않았습니다. 자동매매에는 이미 이 보완 조건이 적용되어 있습니다.<br>⚠ '+cpEsc(d.note)+' 과거 성과는 미래 수익을 보장하지 않으며 투자 권유가 아닙니다.'; }
+document.addEventListener('click',function(e){ if(e.target.id==='gcbtRun'){ gcbtRun(); return; }
+  var hb=e.target.closest&&e.target.closest('#gcbtHold button'); if(hb){ GCBT.hold=+hb.dataset.h; document.querySelectorAll('#gcbtHold button').forEach(function(x){x.setAttribute('aria-pressed',x===hb);}); gcbtRun(); } });
+(function(){ var q=new URLSearchParams(location.search); if(q.get('tab')==='kr'||q.get('gcbt')) setTimeout(function(){ if(!GCBT.started) gcbtRun(); },800); })();
 // ── 단타 기법 추천 · 조합 백테스트 ─────────────
 var SBT={uni:200,fee:0.3,data:null,busy:false,started:false};
 function sbtRun(){ if(SBT.busy) return; SBT.busy=true; SBT.started=true; var b=document.getElementById('sbtRun'); if(b){ b.disabled=true; b.textContent='계산 중…'; }
@@ -2564,7 +2658,7 @@ document.addEventListener('click',function(e){ var t=e.target; if(t.id==='ibtRun
   var seg=function(id,fn){ var b=t.closest&&t.closest('#'+id+' button'); if(!b) return false; document.querySelectorAll('#'+id+' button').forEach(function(x){x.setAttribute('aria-pressed',x===b);}); fn(b); ibtRun(); return true; };
   seg('ibtUni',function(b){IBT.uni=+b.dataset.u;})||seg('ibtSLTP',function(b){var a=b.dataset.s.split(',');IBT.sl=+a[0];IBT.tp=+a[1];})||seg('ibtFee',function(b){IBT.fee=+b.dataset.f;}); });
 (function(){ var q=new URLSearchParams(location.search); if(q.get('ibt')){ if(q.get('ibtn')==='200'){ IBT.uni=200; document.querySelectorAll('#ibtUni button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.u==='200');}); } setTimeout(ibtRun,800); } })();
-(function(){ var prev=window.onTabShown; window.onTabShown=function(t){ try{ if(prev) prev(t); }catch(e){} if(t==='kr'&&!KRBT.started) setTimeout(krbtRun,300); if(t==='kr'&&KRBT.data) setTimeout(krbtPaint,50); if(t==='kr'&&IBT.data) setTimeout(ibtPaint,50); if(t==='kr'&&!SBT.started) setTimeout(sbtRun,400); if(t==='kr'&&SBT.data) setTimeout(sbtPaint,50); }; try{ var q=new URLSearchParams(location.search); if(q.get('krh')){ KRBT.hold=+q.get('krh'); document.querySelectorAll('#krbtHold button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.h===q.get('krh'));}); } if(q.get('krn')==='200'){ KRBT.uni=200; document.querySelectorAll('#krbtUni button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.u==='200');}); } var ks=document.getElementById('krbtPanel'); var vis=ks&&ks.closest('section')&&ks.closest('section').style.display!=='none'; if(q.get('krbt')||q.get('tab')==='kr'||vis) setTimeout(function(){ if(!KRBT.started) krbtRun(); },600); }catch(e){} })();
+(function(){ var prev=window.onTabShown; window.onTabShown=function(t){ try{ if(prev) prev(t); }catch(e){} if(t==='kr'&&!KRBT.started) setTimeout(krbtRun,300); if(t==='kr'&&KRBT.data) setTimeout(krbtPaint,50); if(t==='kr'&&IBT.data) setTimeout(ibtPaint,50); if(t==='kr'&&!SBT.started) setTimeout(sbtRun,400); if(t==='kr'&&SBT.data) setTimeout(sbtPaint,50); if(t==='kr'&&!GCBT.started) setTimeout(gcbtRun,500); if(t==='kr'&&GCBT.data) setTimeout(gcbtPaint,60); }; try{ var q=new URLSearchParams(location.search); if(q.get('krh')){ KRBT.hold=+q.get('krh'); document.querySelectorAll('#krbtHold button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.h===q.get('krh'));}); } if(q.get('krn')==='200'){ KRBT.uni=200; document.querySelectorAll('#krbtUni button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.u==='200');}); } var ks=document.getElementById('krbtPanel'); var vis=ks&&ks.closest('section')&&ks.closest('section').style.display!=='none'; if(q.get('krbt')||q.get('tab')==='kr'||vis) setTimeout(function(){ if(!KRBT.started) krbtRun(); },600); }catch(e){} })();
 </script>
 </body>
 </html>
