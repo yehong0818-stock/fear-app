@@ -755,6 +755,22 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
 @media(min-width:1100px){
  .desktop-content-heading:not([hidden]){display:block;position:sticky;top:0;z-index:65;margin:0 0 14px;padding:14px 18px;border:1px solid var(--line);border-left:4px solid var(--action,var(--ink));border-radius:10px;background:var(--card);color:var(--ink);box-shadow:0 4px 14px rgba(0,0,0,.04);font:750 19px/1.5 var(--body)}
 }
+
+@media(max-width:760px){
+ body,body[data-active-tab="live"]{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+ body>.tabs{position:sticky!important;top:0;z-index:80;background:var(--frost);border-bottom:1px solid var(--line)}
+ body>.tabs button{border:0;border-radius:10px;min-height:44px;font:700 12px/1.4 var(--body);padding:9px 13px}
+ body>.tabs button[aria-pressed="true"]{background:var(--action,var(--ink));color:var(--card)}
+ #mobileDock .mobile-main-nav{display:none!important}
+ .mobile-section-nav{display:flex;gap:6px;overflow-x:auto;padding:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ .mobile-section-nav button{flex:0 0 auto;min-height:48px;border:0;border-radius:10px;padding:9px 13px;background:transparent;color:var(--mute);font:650 12px/1.4 var(--body);white-space:nowrap}
+ .mobile-section-nav button[aria-current="page"]{background:var(--soft,var(--frost));color:var(--action,var(--ink));font-weight:800}
+ body[data-active-tab="live"] #mobileSectionNav{display:none}
+ .mobile-pane-hidden{display:none!important}
+ #mobilePaneHeading{display:block;font:750 19px/1.5 var(--body);margin:14px 0 10px;color:var(--ink)}
+ body[data-active-tab="live"] #mobilePaneHeading{display:none}
+}
+@media(min-width:761px){#mobilePaneHeading{display:none}.mobile-section-nav{display:none}}
 </style>
 </head>
 <body>
@@ -1256,7 +1272,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
 홈 화면에 추가하면 앱처럼 쓸 수 있습니다 (iPhone: 공유 → 홈 화면에 추가 / Android: 메뉴 → 앱 설치).</p>
 
 <nav id="desktopSectionNav" class="desktop-section-nav" aria-label="현재 탭 안에서 이동"></nav>
-<div id="mobileDock" class="mobile-dock" aria-label="모바일 화면 이동"><nav class="ye-mobile-nav" aria-label="YE 매매 화면"><button type="button" data-ye-go="today"><span aria-hidden="true">◷</span>오늘</button><button type="button" data-ye-go="order" aria-current="page"><span aria-hidden="true">⇄</span>YE 매매</button><button type="button" data-ye-go="hold"><span aria-hidden="true">▤</span>보유</button><button type="button" data-ye-go="journal"><span aria-hidden="true">≡</span>기록</button><button type="button" data-ye-go="settings"><span aria-hidden="true">⚙</span>설정</button></nav><nav class="mobile-main-nav" aria-label="전체 탭"><button type="button" data-mobile-tab="live">YE 매매</button><button type="button" data-mobile-tab="over">개요</button><button type="button" data-mobile-tab="rec">추천·신호</button><button type="button" data-mobile-tab="kr">주식</button><button type="button" data-mobile-tab="coin">코인</button><button type="button" data-mobile-tab="quote">시세·비교</button><button type="button" data-mobile-tab="corr">상관</button></nav></div>
+<div id="mobileDock" class="mobile-dock" aria-label="모바일 화면 이동"><nav class="ye-mobile-nav" aria-label="YE 매매 화면"><button type="button" data-ye-go="today"><span aria-hidden="true">◷</span>오늘</button><button type="button" data-ye-go="order" aria-current="page"><span aria-hidden="true">⇄</span>YE 매매</button><button type="button" data-ye-go="hold"><span aria-hidden="true">▤</span>보유</button><button type="button" data-ye-go="journal"><span aria-hidden="true">≡</span>기록</button><button type="button" data-ye-go="settings"><span aria-hidden="true">⚙</span>설정</button></nav><nav id="mobileSectionNav" class="mobile-section-nav" aria-label="현재 탭의 하위 항목"></nav></div>
 <script>
 const $=id=>document.getElementById(id);
 const KO={'extreme fear':'극단적 공포','fear':'공포','neutral':'중립','greed':'탐욕','extreme greed':'극단적 탐욕'};
@@ -2414,6 +2430,7 @@ syncGcBtn();
     window.__tab=t;
     if(window.desktopSections)window.desktopSections(t);
     document.body.dataset.activeTab=t;
+    if(window.mobileSections)window.mobileSections(t);
     document.querySelectorAll('[data-mobile-tab]').forEach(function(b){b.setAttribute('aria-current',b.dataset.mobileTab===t?'page':'false');});
     try{ if(typeof onTabShown==='function') onTabShown(t); }catch(e){}
     try{ window.scrollTo(0,0); }catch(e){}
@@ -2957,5 +2974,31 @@ document.addEventListener('click',function(e){ var t=e.target; if(t.id==='ibtRun
  window.desktopSections(window.__tab||'over');
 })();
 </script>
+<script>
+(function(){
+ var memo={},selected={},small=window.matchMedia('(max-width:760px)');
+ var title=document.createElement('h2');title.id='mobilePaneHeading';var first=document.querySelector('[data-tab]');if(first)first.before(title);
+ function shortLabel(text){return text.replace(/백테스트/g,'검증').replace(/공포·탐욕/g,'시장 심리').replace(/KRX 한국거래소 데이터/g,'시장 지수').replace(/종목별 매수·매도 추천/g,'종목 신호').replace(/거래대금 상위 매수 추천/g,'거래대금').replace(/가중치별 과거 성과 검증/g,'가중치 검증').trim().slice(0,24);}
+ function build(t){
+  if(memo[t])return memo[t];var units=[];
+  document.querySelectorAll('[data-tab="'+t+'"]').forEach(function(root){
+    var blocks=Array.from(root.children).filter(function(e){return e.matches('.panel,.duo,.duo3,.pairs,.calert');});
+    if(blocks.length>1){blocks.forEach(function(block){var h=block.querySelector('.rec-h>b,.cph>b,.cpctl-row b,h3,h4');var label=h?h.textContent:'';if(!label&&block.querySelector('#cpVol'))label='코인 순위';if(!label&&block.querySelector('#bval'))label='비트코인 시장 심리';if(!label&&block.querySelector('#hm'))label='상관 지도';if(!label&&block.querySelector('#smx'))label='섹터 비교';if(!label&&block.querySelector('#pTop'))label='종목 쌍';units.push({root:root,block:block,label:shortLabel(label||'세부 정보 '+(units.length+1))});});}
+    else{var h=root.querySelector('h2,.rec-h>b,.eyebrow,.sig-badge');units.push({root:root,block:null,label:shortLabel(h?(h.firstChild.textContent||h.textContent):'시장 요약')});}
+  });memo[t]=units;return units;
+ }
+ function clear(){document.querySelectorAll('.mobile-pane-hidden').forEach(function(e){e.classList.remove('mobile-pane-hidden');});}
+ function paint(t,index,scroll){
+  clear();if(t==='live'){title.textContent='';return;}var units=build(t);if(!units.length)return;index=Math.max(0,Math.min(index,units.length-1));selected[t]=index;var u=units[index];title.textContent=u.label;
+  if(small.matches){document.querySelectorAll('[data-tab="'+t+'"]').forEach(function(r){if(r!==u.root)r.classList.add('mobile-pane-hidden');});if(u.block)Array.from(u.root.children).forEach(function(c){if(c!==u.block)c.classList.add('mobile-pane-hidden');});}
+  document.querySelectorAll('#mobileSectionNav button').forEach(function(b,i){if(i===index)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+  if(scroll&&small.matches){window.scrollTo(0,0);window.dispatchEvent(new Event('resize'));}
+ }
+ window.mobileSections=function(t){var bar=document.getElementById('mobileSectionNav');if(!bar)return;bar.replaceChildren();if(t!=='live')build(t).forEach(function(u,i){var b=document.createElement('button');b.type='button';b.textContent=u.label;b.onclick=function(){paint(t,i,true);};bar.appendChild(b);});paint(t,selected[t]||0,false);};
+ small.addEventListener('change',function(){window.mobileSections(window.__tab||'over');window.dispatchEvent(new Event('resize'));});
+ window.mobileSections(window.__tab||'over');
+})();
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
