@@ -637,6 +637,60 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
  #liveSec .ye-desk-auto .ye-save #kisExpo{font-size:11px}
  #liveSec .ye-desk-auto{padding:12px!important}
 }
+
+/* 시장 탭 공통: 본문·보조 설명·숫자의 위계를 통일 */
+.market-view{margin-top:20px;min-width:0}.market-view h2{font:750 21px/1.4 var(--body);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin-bottom:14px;letter-spacing:-.4px}
+.market-view h2 small{font:400 12px/1.6 var(--body);color:var(--mute);min-width:0}
+.market-view .rec-h,.market-view .cpctl-row,.market-view .cph{flex-wrap:wrap;gap:10px;min-width:0}
+.market-view .rec-h>b,.market-view .cph>b{font:700 15px/1.5 var(--body)}
+.market-view .rec-h>span,.market-view .cpbtns,.market-view .seg{flex-wrap:wrap;max-width:100%;gap:6px}
+.market-view .lbl,.market-view .note,.market-view .dt{font-size:12px;line-height:1.7}
+.market-view .sec-label{font:650 13px/1.6 var(--body)}
+.market-view .panel{min-width:0}.market-view .tv-name,.market-view .kq-nm,.market-view .rn{font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.market-view .tv-sub,.market-view .kq-sub,.market-view .rtip,.market-view .rwhy{font-size:12px;line-height:1.6}
+.market-view .tv-row>*,.market-view .kq-row>*{min-width:0}
+.market-view .cbtwrap,.market-view .wrapx{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+.market-view .cbt{font-size:12px}.market-view .cbt th,.market-view .cbt td{padding:10px 12px}
+.market-help{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}.market-help summary{cursor:pointer;font-size:12px;font-weight:650;color:var(--mute);line-height:1.7}.market-help .note{font-size:12px;line-height:1.8}
+.market-group-title{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px 12px;margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.market-group-title h3{font:750 16px/1.5 var(--body);color:var(--action,var(--ink))}.market-group-title span{font-size:12px;color:var(--mute)}
+#hero{max-width:1050px;margin:20px auto 26px;padding:22px}.market-view .score{font-size:clamp(96px,13vw,155px)}.market-view .sig-top h3{font-size:26px;line-height:1.4}
+.market-view .hm-legend{flex-wrap:wrap;gap:8px}.market-view .duo:has(#bval){grid-template-columns:1fr}.market-view #btrend{grid-column:1/-1;width:100%}.market-view .bmeta{flex-direction:row;flex-wrap:wrap;gap:12px}
+#cmpSel[hidden]{display:none!important}
+#liveSec .ye-desk-auto .ye-group{padding:9px 0!important}#liveSec .ye-desk-auto .ye-group>h3{margin:0 0 7px!important}#liveSec .ye-desk-auto .ye-group>.ye-help{display:none}#liveSec .ye-desk-auto .ye-settings{gap:0;margin:0}#liveSec .ye-desk-auto .ye-group .ye-fields{gap:8px 10px}
+@media(min-width:1100px){
+ #liveSec>.ye-desk-connect{grid-row:3}#liveSec>.ye-desk-order,#liveSec>.ye-desk-balance{grid-row:4}#liveSec>.ye-desk-auto,#liveSec>.ye-desk-journal{grid-row:5}
+ .market-view{max-width:1180px;margin-left:auto;margin-right:auto}.market-view .duo3{grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+}
+@media(max-width:1099px){
+ .market-view h2{font-size:19px}.market-view h2 small{flex-basis:100%}.market-view .rec-h>span{flex-basis:100%}
+ .market-view .cpctl-row{align-items:flex-start}.market-view .cpbtns{justify-content:flex-start}.market-view .symbar{flex-wrap:wrap}
+ .market-view .sig-facts>div:last-child{grid-column:1/-1}
+}
+@media(max-width:600px){
+ .market-view{margin-top:16px}.market-view .panel{padding:13px}.market-view h2{font-size:18px;margin-bottom:10px}
+ .market-view .btn,.market-view .rtag,.market-view .seg button{min-height:38px;padding:7px 10px;font-size:12px}
+ .market-view .seg{display:flex;flex-wrap:wrap;border-radius:10px}.market-view .cpbtns{width:100%}.market-view .cph{width:100%}
+ .market-view input:not([type=range]):not([type=checkbox]),.market-view select{max-width:100%;min-width:0;font-size:16px;min-height:42px}
+ .market-view .duo3,.market-view .pairs{grid-template-columns:1fr}.market-view .qgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .market-view .q .px{font-size:19px}.market-view .q .desc{font-size:12px;line-height:1.5}
+ .market-view .ladder{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.market-view .ladder .step{font-size:11px}.market-view .cmp{gap:8px}
+ #hero{padding:12px 0;margin-top:10px}.market-view .reading{gap:12px}.market-view .score{font-size:112px}.market-view .sig-top h3{font-size:22px}
+ .market-view .thr-row{gap:8px}.market-view .thr-row label{font-size:12px;min-width:0}.market-view .hm-legend i{max-width:100px}
+ .favbar{position:relative;top:auto;z-index:1}.market-group-title{margin:18px 0 10px}
+}
+
+/* 긴 표는 카드 내부 스크롤로 한정하고 안내 문구는 줄바꿈 */
+.market-view .wrapx,.market-view .cbtwrap{width:100%;min-width:0;overflow-x:auto;position:relative}
+.market-view .wrapx table,.market-view .cbtwrap table{max-width:none}
+.market-view .note,.market-view .n,.market-view p{overflow-wrap:anywhere;max-width:100%;line-height:1.75}
+.market-view .panel.bt h4{margin:14px 0 8px;font-size:14px}
+.market-view .wrapx:has(table):before,.market-view .cbtwrap:has(table):before{content:'표가 넓으면 좌우로 밀어 확인하세요';display:block;font:11px/1.8 var(--body);color:var(--mute);position:sticky;left:0;padding:3px 0 7px}
+@media(max-width:600px){.market-view .wrapx table,.market-view .cbtwrap table{min-width:560px}.market-view .wrapx,.market-view .cbtwrap{border-bottom:1px solid var(--line)}.market-view .acard:empty{display:none}}
+
+/* 데이터 없는 요약 장식은 숨김. 종목 관리 입력은 모바일에서 두 줄로 분리 */
+.market-view .ac-verdict:empty,.market-view .ac-note:empty,.market-view .ac-bars:empty{display:none}
+@media(max-width:600px){.market-view #symBar{display:grid;grid-template-columns:1fr 1fr;gap:10px}.market-view #symBar #symNew,.market-view #symBar #symName{width:100%}.market-view #symBar #symNew{grid-column:1/-1}.market-view #symBar #symList{grid-column:1/-1}.market-view #symBar select{width:100%}}
 </style>
 </head>
 <body>
@@ -665,13 +719,13 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   <div class="fav-sum" id="favSum"></div>
   <div class="fav-row" id="favRow"><span class="fc" style="cursor:default;border-style:dashed;color:var(--mute)">아직 추가한 종목이 없습니다</span></div>
 </section>
-<section class="favpanel" id="favPanel" data-tab="rec">
+<section class="favpanel market-view" id="favPanel" data-tab="rec">
   <div class="rec-h"><b>관심종목 매수·매도 신호</b><span class="dt" id="favPanelDt"></span></div>
   <div class="fav-counts" id="favCounts"></div>
   <div class="rlist" id="favPanelList"></div>
 </section>
 
-<main class="hero skel" id="hero" data-tab="over">
+<main class="hero skel market-view" id="hero" data-tab="over">
   <div class="eyebrow"><span>CNN Fear &amp; Greed Index</span><span>·</span><b id="asof">불러오는 중…</b></div>
   <div class="reading">
     <div class="score" id="score">--</div>
@@ -695,7 +749,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   </dl>
 </main>
 
-<section class="sig" id="sig" data-lv="0" aria-live="polite" data-tab="over">
+<section class="sig market-view" id="sig" data-lv="0" aria-live="polite" data-tab="over">
   <div class="sig-top">
     <div>
       <span class="sig-badge"><i></i><span id="sigBadge">VIX 30 매수 신호 · 확인 중</span></span>
@@ -725,7 +779,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   </div>
 </section>
 
-<section data-tab="rec">
+<section class="market-view" data-tab="rec">
   <h2>종목별 매수·매도 추천 <small>지표 조합 스코어 · 투자 판단은 본인 책임</small></h2>
   <div class="panel rec">
     <div class="rec-h"><b id="recSub">종목별 신호를 계산하고 있습니다</b><span class="dt" id="recDt"></span></div>
@@ -735,7 +789,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   </div>
 </section>
 
-<section id="tvSec" data-tab="rec">
+<section class="market-view" id="tvSec" data-tab="rec">
   <h2>거래대금 상위 매수 추천 <small id="tvSub">당일 거래대금 순 · 앱이 열려 있을 때 갱신</small></h2>
   <div class="panel">
     <div class="rec-h"><b>거래대금 순위</b>
@@ -745,11 +799,11 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
       </span>
     </div>
     <div class="tv-list" id="tvList"><div class="tv-row"><span class="tv-rank">–</span><span class="tv-name">거래대금을 계산하고 있습니다</span><span class="tv-val">--</span></div></div>
-    <p class="note" style="border:0;margin:10px 0 0;padding:0">거래대금은 <b>달러(USD) 기준</b>으로 정렬합니다. 주식·ETF는 당일 거래량 × 가격, <b>암호화폐는 24시간 USD 거래대금</b>, 원화 종목은 원·달러 환율로 환산합니다. <b>지수(^로 시작)는 '거래대금' 개념이 없어 순위에서 제외</b>합니다. 신호는 앱과 같은 기준(<b>매수는 VIX 30 이상만</b>)입니다. 알림은 <b>앱이 열려 있을 때만</b> 동작하며, 정확히 매일 08시에 자동 실행하려면 Genspark Workflows가 필요합니다. 투자 권유가 아닙니다.</p>
+    <p class="note" style="border:0;margin:10px 0 0;padding:0">거래대금은 <b>달러(USD) 기준</b>으로 정렬합니다. 주식·ETF는 당일 거래량 × 가격, <b>암호화폐는 24시간 USD 거래대금</b>, 원화 종목은 원·달러 환율로 환산합니다. <b>지수(^로 시작)는 '거래대금' 개념이 없어 순위에서 제외</b>합니다. 신호 기준은 위 종목별 추천과 같습니다. 알림은 <b>앱이 열려 있을 때만</b> 동작하며, 정확히 매일 08시에 자동 실행하려면 Genspark Workflows가 필요합니다. 투자 권유가 아닙니다.</p>
   </div>
 </section>
 
-<section id="krxSec" data-tab="kr">
+<section class="market-view" id="krxSec" data-tab="kr">
   <h2>KRX 한국거래소 데이터 <small id="krxSub">한국거래소 OpenAPI · 로딩 중</small></h2>
 
   <div class="panel" style="margin-bottom:10px">
@@ -759,7 +813,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
     <div class="krx-grid" id="krxList"><div class="krx-empty">KRX 지수를 불러오는 중입니다…</div></div>
   </div>
 
-  <div class="panel" style="margin-bottom:10px">
+  <div class="market-group-title"><h3>종목 찾기</h3><span>조회 · 거래대금 · 관심종목 신호</span></div><div class="panel" style="margin-bottom:10px">
     <div class="rec-h"><b>KRX 종목 조회</b><span class="note" style="border:0;padding:0;margin:0">공식 시세·기본정보</span></div>
     <div class="symbar"><input id="kq" placeholder="종목명 또는 코드 (예: 삼성전자, 005930)"><button class="btn sm" id="kqBtn">조회</button></div>
     <div class="kq-res" id="kqRes"></div>
@@ -787,7 +841,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
     <div class="sec-label" style="margin:12px 0 6px">30 ~ 50 · 약세</div>
     <div class="krx-grid" id="rsiMid"><div class="krx-empty">불러오는 중…</div></div>
   </div>
-  <div class="panel" style="margin-top:10px">
+  <div class="market-group-title"><h3>기술적 패턴</h3><span>상위 60종목과 전체 시장 스캔은 별도 범위입니다.</span></div><div class="panel" style="margin-top:10px">
     <div class="rec-h"><b>이동평균 배열 전환</b><span class="note" style="border:0;padding:0;margin:0">MA5·MA10·MA20 · 역배열→정배열 전환 종목만</span></div>
     <div class="kq-res" id="maTurn"><div class="krx-empty">불러오는 중…</div></div>
     <p class="note" style="border:0;margin:10px 0 0;padding:0">최근 8거래일 안에 <b>MA5가 MA20을 상향 돌파</b>(골든크로스)해 역배열에서 정배열로 돌아서는 중인 종목만 표시합니다(거래대금 상위 60 기준, 6개월 시세). 돌파 후 5거래일 이내를 '전환 중'으로 봅니다. 투자 권유가 아닙니다.</p>
@@ -801,7 +855,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
     <div class="kq-res" id="scanHammer"><div class="krx-empty">불러오는 중…</div></div>
     <p class="note" style="border:0;margin:10px 0 0;padding:0">코스피·코스닥 <b>전 종목</b>(약 2,700개)을 KRX 일별 OHLC 30영업일로 계산합니다. <b>망치형 반전</b>은 최근 3거래일이 <b>음봉 → 음봉 → 망치형 양봉</b>이고 <b>아래꼬리 ≥ 몸통 3배</b>·위꼬리 ≤ 몸통·몸통 ≤ 35%인 경우이며, <b>거래대금 상위 20종목</b>만 표시합니다. 하락 후 반전 신호로 해석됩니다. 기술적 패턴은 확률일 뿐이며 <b>투자 권유가 아닙니다</b>.</p>
   </div>
-  <div class="panel cpctl" style="margin-top:10px" id="krwPanel">
+  <div class="market-group-title"><h3>점수와 과거 검증</h3><span>가중치 조절 · 전략별 수익과 위험 비교</span></div><div class="panel cpctl" style="margin-top:10px" id="krwPanel">
     <div class="cpctl-row">
       <div class="cph" style="margin:0"><b>국내 신호 점수 가중치</b><span class="lbl" id="krwSum">합계 100%</span></div>
       <div class="cpbtns"><button class="btn sm" data-kw="20,20,20,20,20,0">균형(앱 기본)</button><button class="btn sm" data-kw="40,40,0,10,10,0">추세·모멘텀</button><button class="btn sm" data-kw="0,0,35,20,15,30">역발상(과매도)</button><button class="btn sm" data-kw="17,17,17,17,16,16">RSI 포함</button></div>
@@ -872,7 +926,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   </div>
 </section>
 
-<section data-tab="coin">
+<section class="market-view" data-tab="coin">
   <h2>비트코인 공포·탐욕 <small>Alternative.me</small></h2>
   <div class="duo">
     <div class="panel btc">
@@ -937,16 +991,16 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   <p class="note" style="border:0;margin:10px 0 0;padding:0">거래량은 CoinGecko 일별 거래대금(USD) <b>최근 5일 합산</b>, 상승률은 24시간·7일 변동, 뉴스는 Cointelegraph·Decrypt·CoinDesk RSS 헤드라인의 긍·부정 키워드 점수입니다. <b>예상 상승</b>은 기본 거래량 15%·상승률 75%·뉴스 10% 가중 점수(백테스트 샤프 상위 설정, 슬라이더로 변경 가능)로 통계적 참고값일 뿐 <b>투자 권유가 아닙니다</b>. 스테이블코인·래핑 자산은 제외했습니다.</p>
 </section>
 
-<section data-tab="kr">
-  <h2>한국 증시 <small>코스피·코스닥·원달러 환율 · 야후 파이낸스</small></h2>
+<section class="market-view" data-tab="kr">
+  <h2>한국 시장 보조 지표 <small>코스피·코스닥·원달러 환율 · 야후 파이낸스</small></h2>
   <div class="panel">
-      <div class="krt"><b>한국 증시</b></div>
+      <div class="krt"><b>환율·시장 보조 정보</b></div>
       <div id="krRows"><div class="krrow"><b>코스피</b><span class="krv">불러오는 중…</span></div></div>
       <div class="krhi" id="krHi"></div>
   </div>
 </section>
 
-<section id="cmpSec" data-tab="quote">
+<section class="market-view" id="cmpSec" data-tab="quote">
   <h2>수익률 비교 차트 <small id="cmpSub">같은 기간 수익률 비교 · 시작 = 0%</small></h2>
   <div class="panel">
     <div class="seg" id="cmpMode" style="margin-right:8px"><button data-m="base" aria-pressed="true">기본 비교</button><button data-m="pick">직접 선택 (2~3종목)</button></div>
@@ -968,7 +1022,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   </div>
 </section>
 
-<section id="qsec" data-tab="quote">
+<section class="market-view" id="qsec" data-tab="quote">
   <h2>섹터별 시세 <small>전일 대비 · 아래 선은 최근 1개월</small></h2>
   <div class="seg sectab" id="sectab" role="tablist"></div>
   <div class="secsum" id="secsum"></div>
@@ -983,7 +1037,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   <p class="note" style="border:0;margin-top:10px;padding:0">스페이스X는 비상장 기업이라 직접 시세가 없습니다. 스페이스X 지분을 보유한 상장 펀드 DXYZ(Destiny Tech100)로 간접 확인하며, 펀드 구조상 실제 가치 대비 프리미엄이 붙어 거래될 수 있습니다.</p>
 </section>
 
-<section id="corrSec" data-tab="corr">
+<section class="market-view" id="corrSec" data-tab="corr">
   <h2><span id="corrN">28</span>종목 상관관계 <small id="corrSub">주간 수익률 · 매주 자동 갱신</small></h2>
   <div class="corr-meta" id="corrMeta"><span class="chip">계산 중… 처음 한 번은 10초 정도 걸립니다</span></div>
   <div class="panel calert" id="calert">
@@ -1008,7 +1062,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
     <div class="panel"><h4>같이 움직이는 짝</h4><div id="pTop"></div></div>
     <div class="panel"><h4>따로 움직이는 짝 (분산 효과)</h4><div id="pBot"></div></div>
   </div>
-  <p class="note" style="border:0;margin-top:10px;padding:0">변화 알림 기본 기준: <b>급변</b> = 51주 상관이 지난주보다 ±0.10 이상 바뀜(과거 30주 동안 상위 1% 변화), <b>단기 이탈</b> = 최근 13주 상관이 51주 상관과 ±0.50 이상 다름(상위 5%). 「기준 조절」에서 바꿀 수 있습니다. 13주 상관은 표본이 작아 흔들림이 크므로 "흐름이 바뀌는 중"이라는 신호로만 보세요.<br>한국·대만·미국 장과 24시간 거래되는 코인의 시간 차이를 줄이려고 금요일 종가 기준 주간 수익률을 씁니다. 매주 금요일 미국 장 마감 후(한국시간 토요일 아침) 최근 51주로 다시 계산합니다. 51주 표본에서는 ±0.28 이내 값은 0과 구별하기 어렵습니다.</p>
+  <details class="market-help"><summary>기준·출처·주의사항</summary><p class="note" style="border:0;margin-top:10px;padding:0">변화 알림 기본 기준: <b>급변</b> = 51주 상관이 지난주보다 ±0.10 이상 바뀜(과거 30주 동안 상위 1% 변화), <b>단기 이탈</b> = 최근 13주 상관이 51주 상관과 ±0.50 이상 다름(상위 5%). 「기준 조절」에서 바꿀 수 있습니다. 13주 상관은 표본이 작아 흔들림이 크므로 "흐름이 바뀌는 중"이라는 신호로만 보세요.<br>한국·대만·미국 장과 24시간 거래되는 코인의 시간 차이를 줄이려고 금요일 종가 기준 주간 수익률을 씁니다. 매주 금요일 미국 장 마감 후(한국시간 토요일 아침) 최근 51주로 다시 계산합니다. 51주 표본에서는 ±0.28 이내 값은 0과 구별하기 어렵습니다.</p></details>
 </section>
 
 <section id="liveSec" data-tab="live">
@@ -1086,8 +1140,8 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   </div>
 </section>
 
-<section data-tab="rec">
-  <h2>신호 정확도 통계 <small id="acSub">과거 데이터 기준 요약</small></h2>
+<section class="market-view" data-tab="rec">
+  <div class="market-group-title"><h3>과거 검증</h3><span>현재 신호와 구분하여 확인하세요.</span></div><h2>신호 정확도 통계 <small id="acSub">과거 데이터 기준 요약</small></h2>
   <div class="panel acard">
     <div class="ac-grid" id="acGrid"></div>
     <div class="ac-verdict" id="acVerdict"></div>
@@ -1098,7 +1152,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   </div>
 </section>
 
-<section data-tab="rec">
+<section class="market-view" data-tab="rec">
   <h2>신호 적중률 백테스트 <small id="btSub">과거 데이터로 신호 성과 확인</small></h2>
   <div class="panel bt">
     <div class="wrapx"><table id="btTable"><thead><tr><th>신호</th><th>표본(일)</th><th>평균 1주</th><th>평균 1개월</th><th>평균 3개월</th><th>1개월 플러스 확률</th></tr></thead><tbody><tr><td colspan="6">계산 중… (첫 계산에 최대 1분)</td></tr></tbody></table></div>
@@ -1108,19 +1162,19 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   </div>
 </section>
 
-<section data-tab="over">
+<section class="market-view" data-tab="over">
   <h2>추이 <span class="seg" id="range">
     <button aria-pressed="false" data-d="30">1개월</button><button aria-pressed="true" data-d="90">3개월</button><button aria-pressed="false" data-d="400">1년</button>
   </span></h2>
   <div class="panel"><canvas id="chart"></canvas><div class="tip" id="tip">차트를 눌러 날짜별 값을 확인하세요</div></div>
 </section>
 
-<section data-tab="over">
+<section class="market-view" data-tab="over">
   <h2>지수를 만드는 7가지 지표 <small>각 0–100, 낮을수록 공포</small></h2>
   <div class="parts" id="parts"></div>
 </section>
 
-<section data-tab="over">
+<section class="market-view" data-tab="over">
   <h2>VIX 변동성 지수 <small>S&amp;P 500 옵션 기반 · 높을수록 공포</small></h2>
   <div class="panel vix">
     <div><div class="lbl">현재</div><div class="big" id="vix">--</div><div class="delta" id="vixd"></div><div class="lbl" id="vixz" style="margin-top:6px"></div></div>
