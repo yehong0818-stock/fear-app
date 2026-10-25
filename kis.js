@@ -45,6 +45,27 @@ if (process.env.KIS_PRODUCT) C.product = process.env.KIS_PRODUCT;
 if (process.env.KIS_ENV) C.env = process.env.KIS_ENV;
 if (process.env.TRADE_PIN) C.pin = process.env.TRADE_PIN;
 
+// 키·계좌는 환경별로 보관. 이전 단일 설정은 현재 환경에만 이관.
+C.profiles = C.profiles || {};
+if (!C.profiles[C.env]) C.profiles[C.env] = { appKey: C.appKey, appSecret: C.appSecret, account: C.account, product: C.product };
+function profileStatus() {
+  const out = {};
+  for (const env of ['demo', 'real']) { const p = C.profiles[env] || {}; out[env] = { hasKey: !!p.appKey, hasSecret: !!p.appSecret, configured: !!(p.appKey && p.appSecret && p.account), account: p.account ? p.account.slice(0,4) + '****' : '', product: p.product || '01' }; }
+  return out;
+}
+function updateProfile(b) {
+  const env = b.env === 'real' ? 'real' : b.env === 'demo' ? 'demo' : C.env;
+  const switched = env !== C.env;
+  const p = Object.assign({ appKey:'', appSecret:'', account:'', product:'01' }, C.profiles[env] || {});
+  if (b.appKey) p.appKey = String(b.appKey).trim();
+  if (b.appSecret) p.appSecret = String(b.appSecret).trim();
+  if (b.account) p.account = String(b.account).replace(/[^0-9]/g,'');
+  if (b.product) p.product = String(b.product).trim();
+  C.profiles[env] = p; C.env = env; Object.assign(C,p);
+  TOK = { v:'', exp:0 };
+  if (switched) { C.auto.on = false; C.dry = true; C.allowLive = false; }
+  return switched;
+}
 function save() { try { fs.writeFileSync(CFG_PATH, JSON.stringify(C, null, 2)); } catch (e) {} }
 
 // ── 캐시·종목 유니버스(server.js에서 주입) ──────────
@@ -405,7 +426,7 @@ async function handle(req, res, url) {
     return jres(res, {
       configured: !!(C.appKey && C.account), env: C.env, hasPin: !!C.pin, dry: C.dry,
       allowLive: C.allowLive, orderType: C.orderType, excgId: C.excgId,
-      account: C.account ? C.account.slice(0, 4) + '****' : '', auto: C.auto, autoRunning: C.auto.on,
+      account: C.account ? C.account.slice(0, 4) + '****' : '', profiles: profileStatus(), auto: C.auto, autoRunning: C.auto.on,
     });
   }
 
@@ -414,18 +435,15 @@ async function handle(req, res, url) {
     const b = JSON.parse((await readBody(req)) || '{}');
     if (C.pin) { const c = pinOK(req, sp); if (!c.ok) return jres(res, { ok: false, msg: c.msg }, 403); }
     if (b.pin) C.pin = String(b.pin);
-    if (b.appKey) C.appKey = String(b.appKey).trim();
-    if (b.appSecret) C.appSecret = String(b.appSecret).trim();
-    if (b.account) C.account = String(b.account).replace(/[^0-9]/g, '');
-    if (b.product) C.product = String(b.product).trim();
-    if (b.env) C.env = (b.env === 'real' ? 'real' : 'demo');
-    if (typeof b.dry === 'boolean') C.dry = b.dry;
-    if (typeof b.allowLive === 'boolean') C.allowLive = b.allowLive;
+    if (running) return jres(res, { ok:false, msg:'자동매매 점검 중입니다. 잠시 후 다시 저장하세요.' }, 409);
+    const switched = updateProfile(b);
+    if (!switched && typeof b.dry === 'boolean') C.dry = b.dry;
+    if (!switched && typeof b.allowLive === 'boolean') C.allowLive = b.allowLive;
     if (b.orderType) C.orderType = b.orderType;
     if (b.excgId) C.excgId = b.excgId;
-    if (b.auto) Object.assign(C.auto, b.auto);
+    if (b.auto && !switched) Object.assign(C.auto, b.auto);
     save();
-    return jres(res, { ok: true, configured: !!(C.appKey && C.account), env: C.env, dry: C.dry });
+    return jres(res, { ok: true, configured: !!(C.appKey && C.account), env: C.env, dry: C.dry, switched, msg: switched ? '계좌 환경 변경: 자동매매 꺼짐 · 주문 미전송으로 전환했습니다.' : '선택한 환경의 키·계좌를 저장했습니다.' });
   }
 
   // 이하 PIN 필요 (단, PIN을 아직 만들지 않았다면 매매일지 조회·CSV는 허용 — 주문 기능은 계속 차단)
@@ -437,8 +455,9 @@ async function handle(req, res, url) {
     catch (e) { return jres(res, { ok: false, msg: String(e && e.message || e) }); }
   }
   if (url === '/api/kis/order') {
-    const side = sp.get('side'); const code = (sp.get('code') || '').replace(/[^0-9]/g, ''); const qty = parseInt(sp.get('qty') || '0', 10);
-    if (!['buy', 'sell'].includes(side) || !code || qty < 1) return jres(res, { ok: false, msg: 'side/code/qty를 확인하세요.' });
+    const side = sp.get('side'), code = (sp.get('code') || '').trim(), qty = Number(sp.get('qty'));
+    if (sp.get('expectedEnv') && sp.get('expectedEnv') !== C.env) return jres(res, { ok:false, msg:'계좌 환경이 변경되었습니다. 확인 후 다시 주문하세요.' }, 409);
+    if (!['buy', 'sell'].includes(side) || !/^[0-9A-Z]{6}$/.test(code) || !Number.isInteger(qty) || qty < 1) return jres(res, { ok: false, msg: '종목코드 6자리와 수량(양의 정수)을 확인하세요.' });
     try { const o = await order(side, code, qty); return jres(res, { ok: o.rt_cd === '0' || o.dry, dry: !!o.dry, raw: { rc: o.rt_cd, msg: o.msg1, odno: o.output?.ODNO } }); }
     catch (e) { return jres(res, { ok: false, msg: String(e && e.message || e) }); }
   }
@@ -504,4 +523,4 @@ function startLoop() {
 }
 startLoop();
 
-module.exports = { init, handle, startLoop, setUniverse, _t: { C, autoTick, comboTick, resetCombo: () => { comboDay = ''; }, candidates, rsiAllowed, bizDaysSince, tradeWindow, sessionWindows, MODE_PRESET } };
+module.exports = { init, handle, startLoop, setUniverse, _t: { C, updateProfile, profileStatus, autoTick, comboTick, resetCombo: () => { comboDay = ''; }, candidates, rsiAllowed, bizDaysSince, tradeWindow, sessionWindows, MODE_PRESET } };

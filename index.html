@@ -691,6 +691,10 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
 /* 데이터 없는 요약 장식은 숨김. 종목 관리 입력은 모바일에서 두 줄로 분리 */
 .market-view .ac-verdict:empty,.market-view .ac-note:empty,.market-view .ac-bars:empty{display:none}
 @media(max-width:600px){.market-view #symBar{display:grid;grid-template-columns:1fr 1fr;gap:10px}.market-view #symBar #symNew,.market-view #symBar #symName{width:100%}.market-view #symBar #symNew{grid-column:1/-1}.market-view #symBar #symList{grid-column:1/-1}.market-view #symBar select{width:100%}}
+
+.ye-order-results{display:flex;flex-direction:column;gap:6px;grid-column:1/-1;width:100%;min-width:0}.ye-order-results:empty{display:none}.ye-order-results button{text-align:left;white-space:normal;line-height:1.5}
+#kisOrderSelected{grid-column:1/-1;width:100%;line-height:1.6}
+#liveSec .symbar label:has(#kisCode){grid-column:1/-1;width:100%}
 </style>
 </head>
 <body>
@@ -1071,9 +1075,9 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
 <div class="ye-policy"><b>보유형 매매</b><span>오전·오후 조건 매매</span><span>장중 상시 손절</span><span>당일 강제청산 없음</span></div>
   <div class="panel ye-desk-connect" style="margin-bottom:10px">
     <div class="rec-h"><b>KIS 연결 설정</b><span id="kisState" class="note" style="border:0;padding:0;margin:0"></span></div>
-    <p class="ye-help">항목명을 보고 입력하세요. 실전·모의 여부와 주문 전송 여부는 별개입니다.</p><div class="kis-grid ye-connect">
-      <label>앱 키<input id="kisAppKey" placeholder="발급받은 앱 키" autocomplete="off"></label>
-      <label>앱 시크릿<input id="kisAppSec" type="password" placeholder="발급받은 비밀 키" autocomplete="off"></label>
+    <p class="ye-help" id="kisProfileHint">선택한 환경의 키·계좌만 저장합니다. 실전·모의 키는 따로 보관됩니다.</p><p class="ye-help"><a href="https://apiportal.koreainvestment.com/about-howto" target="_blank" rel="noopener">모의투자·앱 키 신청 안내</a> · 환경 변경 시 자동매매가 꺼지고 주문 미전송으로 전환됩니다.</p><div class="kis-grid ye-connect">
+      <label><span id="kisKeyLabel">앱 키 · 선택 환경</span><input type="password" id="kisAppKey" placeholder="발급받은 앱 키" autocomplete="off"></label>
+      <label><span id="kisSecretLabel">앱 시크릿 · 선택 환경</span><input id="kisAppSec" type="password" placeholder="발급받은 비밀 키" autocomplete="off"></label>
       <label>계좌번호 · 앞 8자리<input id="kisAcct" placeholder="숫자 8자리" inputmode="numeric" maxlength="8"></label>
       <label>계좌상품코드 · 뒤 2자리<input id="kisProd" placeholder="예: 01 (종합계좌)" value="01" maxlength="2" inputmode="numeric" title="계좌번호 앞 8자리와 별도인 뒤 2자리입니다. 01은 종합계좌 코드입니다."></label>
       <label>계좌 환경<select id="kisEnv"><option value="demo">모의투자</option><option value="real">실전투자</option></select></label>
@@ -1090,22 +1094,22 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   </div>
 
   <div class="panel ye-desk-balance" style="margin-bottom:10px">
-    <div class="rec-h"><b>계좌 현황</b><span id="kisBalSub" class="note" style="border:0;padding:0;margin:0"></span></div>
+    <div class="rec-h"><b id="kisBalanceTitle">계좌 현황 (환경 확인 중)</b><span id="kisBalSub" class="note" style="border:0;padding:0;margin:0"></span></div>
     <div class="krx-main" id="kisBal"></div>
     <div class="kq-res" id="kisHold"></div>
   </div>
 
   <div class="panel ye-desk-order" style="margin-bottom:10px">
     <div class="rec-h"><b>수동 주문</b><span class="note" style="border:0;padding:0;margin:0">1건 즉시</span></div>
-    <div class="symbar"><label class="ye-order-label">종목코드<input id="kisCode" placeholder="예: 005930" style="width:180px"></label><label class="ye-order-label">주문 수량 · 주<input id="kisQty" type="number" min="1" value="1" style="width:100px"></label>
+    <div class="symbar"><label class="ye-order-label">종목코드 또는 종목명<input id="kisCode" placeholder="예: 삼성전자 또는 005930" autocomplete="off" style="width:100%"></label><button class="btn sm" id="kisSearch" type="button">종목 검색</button><label class="ye-order-label">주문 수량 · 주<input id="kisQty" type="number" min="1" value="1" style="width:100px"></label>
       <button class="btn sm" id="kisBuy" style="background:var(--hot);color:#fff;border-color:var(--hot)">매수</button>
       <button class="btn sm" id="kisSell" style="background:var(--cold);color:#fff;border-color:var(--cold)">매도</button>
-      <span id="kisOMsg" class="note" style="border:0;padding:0;margin:0"></span>
+      <span id="kisOMsg" class="note" style="border:0;padding:0;margin:0"></span><div id="kisOrderResults" class="ye-order-results" aria-live="polite"></div><p id="kisOrderSelected" class="lbl" aria-live="polite">종목을 검색하고 목록에서 주문 대상을 선택하세요.</p>
     </div>
   </div>
 
   <div class="panel ye-desk-auto">
-    <div class="rec-h"><b>자동매매</b>
+    <div class="rec-h"><b id="kisAutoTitle">자동매매 (환경 확인 중)</b>
       <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="btn sm" id="kisAuto" aria-pressed="false">자동매매 켜기</button><button class="btn sm" id="kisOnce">1회 점검</button><span id="kisAutoSub" class="note" style="border:0;padding:0;margin:0"></span><span id="kisAutoEnv" class="env-badge env-demo">모의투자 계좌</span></span></div>
 <div class="ye-settings"><section class="ye-group"><h3>매매 전략</h3><p class="ye-help">오후 매수 후 다음날 보유 가능 · 당일 강제청산 없음</p><div class="ye-fields"><label>매매 방식<select id="kisMode"><option value="swing">보유형 · 다음날 보유 가능</option><option value="short">단기(1~5거래일)</option><option value="combo">단타 조합(검증 통과 기법)</option></select></label><label>매수 신호<select id="kisSignal"><option value="score">점수 합산</option><option value="trend">추세·모멘텀 상위</option><option value="box">1분봉 박스권 지지/저항</option></select></label><label>최대 보유일 · 0은 제한 없음<input id="kisHoldDays" type="number" step="1" min="0" max="60" value="0"></label><label class="kis-combo">단타 조합<select id="kisCombo"><option value="r2m">RSI2 눌림목 + 코스피 필터 (추천)</option><option value="h">RSI2(필터) + IBS 저점 반등</option><option value="r2">RSI2 눌림목 (필터 없음)</option></select></label></div></section><section class="ye-group"><h3>투자 한도</h3><p class="ye-help">한 종목에 쓸 금액과 전체 보유 한도입니다.</p><div class="ye-fields"><label>종목당 투자 비중 · %<input id="kisPos" type="number" step="1" value="10"></label><label>최대 보유 종목 수<input id="kisMaxH" type="number" step="1" value="5"></label><label>하루 매수 횟수<input id="kisMaxB" type="number" step="1" value="3"></label></div></section><section class="ye-group"><h3>손익 관리</h3><p class="ye-help">손절은 손실 제한, 익절은 수익 실현 기준입니다.</p><div class="ye-fields"><label>손절 기준 · %<input id="kisSL" type="number" step="1" value="-3"></label><label>익절 기준 · % (0은 해제)<input id="kisTP" type="number" step="1" value="10"></label><label class="kis-chk"><input type="checkbox" id="kisStopAny" checked> 장중 상시 손절</label></div></section><section class="ye-group"><h3>매매 시간</h3><p class="ye-help">오전은 시작 시각부터, 오후는 장 마감 15:30에서 거꾸로 계산합니다.</p><div class="ye-fields"><div class="ye-time-compact"><div class="ye-time-row"><b>오전</b><label><span>시작</span><input id="kisDayFrom" type="time" min="09:00" max="15:30" value="09:00"></label><label><span>동안</span><select id="kisMorningMinutes"><option value="5">5분</option><option value="10">10분</option><option value="15">15분</option><option value="20">20분</option><option value="30" selected>30분</option><option value="45">45분</option><option value="60">60분</option><option value="90">90분</option><option value="120">120분</option><option value="180">180분</option></select></label><small id="kisMorningEnd">09:00~09:30</small></div><div class="ye-time-row"><b>오후</b><label><span>장 마감 전</span><select id="kisAfternoonMinutes"><option value="5">5분</option><option value="10">10분</option><option value="15">15분</option><option value="20">20분</option><option value="30" selected>30분</option><option value="45">45분</option><option value="60">60분</option><option value="90">90분</option><option value="120">120분</option><option value="180">180분</option></select></label><small id="kisAfternoonEnd">15:00~15:30</small></div></div></div></section></div><details class="ye-advanced"><summary>고급 설정 <span>매수 필터·뉴스·반복 손실 제외</span></summary><div class="ye-settings"><section class="ye-group"><h3>매수 필터</h3><p class="ye-help">점수·장세·과매도 조건을 추가할 때만 조절하세요.</p><div class="ye-fields"><label>매수 임계점수<input id="kisScore" type="number" step="1" value="3"></label><label>장세 필터(신규 매수)<select id="kisRegime"><option value="off">끔</option><option value="basic">코스피 20일선 위</option><option value="strong">20일선 위 + 상승</option></select></label><label class="kis-chk"><input type="checkbox" id="kisVix"> VIX 30 이상만 매수</label><label class="kis-chk"><input type="checkbox" id="kisRsiBuy"> RSI 과매도 매수 <span class="lbl" id="kisRsiState"></span></label><label>RSI 기준(미만)<input id="kisRsiMax" type="number" step="1" value="30"></label></div></section><section class="ye-group"><h3>뉴스와 반복 손실</h3><p class="ye-help">기사 수는 사실검증이 아닙니다. 반복 손실 제외 기준은 함께 설정하세요.</p><div class="ye-fields"><label>뉴스 최소 건수(0=끔)<input id="kisNews" type="number" step="1" min="0" max="20" value="2"></label><label class="kis-chk"><input type="checkbox" id="kisSkipLosers"> 손실 반복 종목 제외</label><label>제외 기준(매도 횟수)<input id="kisLoserMin" type="number" step="1" value="2"></label><label>제외 기간(일)<input id="kisLoserDays" type="number" step="1" value="30"></label></div></section><section class="ye-group"><h3>기존 전략 보조 설정</h3><p class="ye-help">단타 조합의 실제 실행 시간은 위의 오전·오후 구간을 따릅니다.</p><div class="ye-fields"><label class="kis-combo">종가 매매 시작<input id="kisComboFrom" type="time" value="15:10"></label><label class="kis-combo">종가 매매 마감<input id="kisComboTo" type="time" value="15:18"></label></div></section></div><button class="btn sm" id="kisSwingPreset" style="align-self:end" title="백테스트 결과 기반 추천값을 입력칸에 채웁니다(저장은 따로)">스윙 20일 추천값 채우기</button></details><div class="ye-save"><span class="lbl" id="kisExpo" style="align-self:end"></span><button class="btn sm" id="kisSaveAuto" style="align-self:end">자동매매 설정 저장</button></div><details class="ye-advanced"><summary>매매 방식 설명과 주의사항</summary><p class="lbl" id="kisModeNote"></p></details>
     <div class="tv-list" id="kisLog" style="margin-top:10px"></div>
@@ -2374,6 +2378,16 @@ function yeTimeSummary(){
   $('kisAfternoonEnd').textContent=fmt(930-pm)+'~15:30';
 }
 ['kisDayFrom','kisMorningMinutes','kisAfternoonMinutes'].forEach(function(id){if($(id))$(id).addEventListener('change',yeTimeSummary);});
+function kisProfileUI(clear){
+  var env=$('kisEnv').value, name=env==='demo'?'모의투자':'실전투자';
+  var p=(window.__kis&&window.__kis.profiles&&window.__kis.profiles[env])||{};
+  $('kisKeyLabel').textContent=name+' 앱 키'; $('kisSecretLabel').textContent=name+' 앱 시크릿';
+  $('kisProfileHint').textContent=name+' 설정 · '+(p.configured?'저장됨 ('+p.account+')':'키·계좌 등록 필요')+' · 빈 키 입력란은 해당 환경의 저장값을 유지합니다.';
+  $('kisAppKey').placeholder=p.hasKey?'저장됨 · 변경할 때만 입력':name+' 앱 키 입력';
+  $('kisAppSec').placeholder=p.hasSecret?'저장됨 · 변경할 때만 입력':name+' 앱 시크릿 입력';
+  if(clear){$('kisAppKey').value='';$('kisAppSec').value='';$('kisAcct').value='';$('kisProd').value=p.product||'01';}
+}
+if($('kisEnv'))$('kisEnv').addEventListener('change',function(){kisProfileUI(true);});
 async function loadKis(){
   try{
     const st=await fetch('/api/kis/status').then(r=>r.json());
@@ -2382,7 +2396,7 @@ async function loadKis(){
     envBadgePaint(st);
     if(typeof loadBox==='function') loadBox();
     if($('kisState'))$('kisState').textContent=st.configured?'연결됨 ('+st.account+')':'미설정';
-    if($('kisEnv'))$('kisEnv').value=st.env;
+    if($('kisEnv'))$('kisEnv').value=st.env; kisProfileUI(true);
     if($('kisDry'))$('kisDry').checked=!!st.dry;
     if($('kisAllow'))$('kisAllow').checked=!!st.allowLive;
     const A=st.auto||{}; if($('kisScore'))$('kisScore').value=A.buyScoreMin; if($('kisPos'))$('kisPos').value=A.positionPct;
@@ -2417,7 +2431,7 @@ async function kisLog(){ const j=await kisFetch('/api/kis/log'); if(!j.ok||!$('k
   const rows=(j.log||[]).slice(-20).reverse();
   $('kisLog').innerHTML=rows.map(l=>'<div class="tv-row"><span class="tv-rank">·</span><span><span class="tv-name">'+(l.kind||'')+'</span><span class="tv-sub">'+(l.name?l.name+' ':'')+(l.code||'')+(l.qty?' '+l.qty+'주':'')+(l.msg?' · '+l.msg:'')+(l.note?' · '+l.note:'')+(l.score!=null?' · 점수'+l.score:'')+'</span></span><span class="tv-val">'+String(l.t||'').slice(11,19)+'</span></div>').join('')||'<div class="tv-row"><span class="tv-rank">–</span><span class="tv-name">기록이 없습니다</span><span class="tv-val">--</span></div>';
 }
-function envBadgePaint(st){ var real=st&&st.env==='real', txt=real?(st.dry?'실전 계좌 · DRY-RUN(주문 안 나감)':'실전 계좌 · 실제 주문 나감'):'모의투자 계좌 · 실제 주문 안 나감', cls=real?'env-badge env-real':'env-badge env-demo';
+function envBadgePaint(st){ var name=st&&st.env==='real'?'실전투자':'모의투자'; if($('kisBalanceTitle'))$('kisBalanceTitle').textContent='계좌 현황 ('+name+')'; if($('kisAutoTitle'))$('kisAutoTitle').textContent='자동매매 ('+name+')'; var real=st&&st.env==='real', txt=real?(st.dry?'실전 계좌 · DRY-RUN(주문 안 나감)':'실전 계좌 · 실제 주문 나감'):'모의투자 계좌 · 실제 주문 안 나감', cls=real?'env-badge env-real':'env-badge env-demo';
   var b=$('kisEnvBadge'); if(b){ b.className=cls; b.textContent=txt; }
   var a=$('kisAutoEnv'); if(a){ a.className=cls; a.textContent=real?(st.dry?'실전 · DRY-RUN':'실전 계좌'):'모의투자 계좌'; } }
 if($('kisSave'))$('kisSave').onclick=async()=>{
@@ -2428,20 +2442,44 @@ if($('kisSave'))$('kisSave').onclick=async()=>{
   if(body.pin) localStorage.setItem('kis_pin',body.pin);
   const r=await fetch('/api/kis/setup',{method:'POST',headers:{'content-type':'application/json','x-trade-pin':kisPin()},body:JSON.stringify(body)});
   const j=await r.json().catch(()=>({ok:false,msg:'응답 오류'}));
-  kisMsg('kisMsg', j.ok?'저장했습니다.':(j.msg||'저장 실패'), j.ok);
+  kisMsg('kisMsg', j.ok?(j.msg||'저장했습니다.'):(j.msg||'저장 실패'), j.ok);
   if(j.ok) loadKis();
 };
 if($('kisReload'))$('kisReload').onclick=()=>loadKis();
 if($('kisBuy'))$('kisBuy').onclick=()=>kisOrder('buy');
 if($('kisSell'))$('kisSell').onclick=()=>kisOrder('sell');
+var KIS_ORDER_SELECTION=null, KIS_SEARCH_SEQ=0;
+function kisOrderReset(){KIS_ORDER_SELECTION=null;KIS_SEARCH_SEQ++;$('kisOrderResults').replaceChildren();$('kisOrderSelected').textContent='종목을 검색하고 목록에서 주문 대상을 선택하세요.';}
+if($('kisCode'))$('kisCode').addEventListener('input',kisOrderReset);
+async function kisSearchOrder(){
+  var q=$('kisCode').value.trim(),seq=++KIS_SEARCH_SEQ;KIS_ORDER_SELECTION=null;
+  $('kisOrderResults').replaceChildren();$('kisOrderSelected').textContent='검색 중…';
+  if(!q){$('kisOrderSelected').textContent='종목명 또는 코드를 입력하세요.';return;}
+  try{
+    var res=await fetch('/api/krxsearch?q='+encodeURIComponent(q));if(!res.ok)throw Error('조회 실패');var j=await res.json();
+    if(seq!==KIS_SEARCH_SEQ)return;
+    var rows=j.items||[];
+    $('kisOrderSelected').textContent=rows.length?'아래 목록에서 정확한 종목을 선택하세요.':'검색 결과가 없습니다. 종목코드로 다시 검색하세요.';
+    rows.filter(function(x){return /^[0-9A-Z]{6}$/.test(x.code);}).forEach(function(x){
+      var btn=document.createElement('button');btn.type='button';btn.className='btn sm';btn.textContent=x.name+' · '+x.code+' · '+x.market;
+      btn.onclick=function(){KIS_ORDER_SELECTION={code:x.code,name:x.name};$('kisCode').value=x.name+' ('+x.code+')';$('kisOrderSelected').textContent='주문 대상: '+x.name+' · '+x.code;$('kisOrderResults').replaceChildren();};
+      $('kisOrderResults').appendChild(btn);
+    });
+  }catch(e){if(seq===KIS_SEARCH_SEQ)$('kisOrderSelected').textContent='종목 목록을 불러오지 못했습니다. 잠시 후 다시 검색하세요.';}
+}
+if($('kisSearch'))$('kisSearch').onclick=kisSearchOrder;
+if($('kisCode'))$('kisCode').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();kisSearchOrder();}});
 async function kisOrder(side){
-  const code=($('kisCode').value||'').trim(), qty=parseInt($('kisQty').value||'0',10);
-  if(!code||!qty){ kisMsg('kisOMsg','종목코드와 수량을 입력하세요.',false); return; }
-  if(!confirm((side==='buy'?'매수':'매도')+' '+code+' '+qty+'주를 실행할까요?'))return;
+  var selected=KIS_ORDER_SELECTION,raw=$('kisQty').value,qty=Number(raw);
+  if(!selected){kisMsg('kisOMsg','종목을 검색하고 주문 대상을 선택하세요.',false);return;}
+  if(!Number.isInteger(qty)||qty<1){kisMsg('kisOMsg','수량은 1 이상의 정수로 입력하세요.',false);return;}
+  var st=await fetch('/api/kis/status').then(function(r){return r.json();}).catch(function(){return null;});
+  if(!st){kisMsg('kisOMsg','계좌 환경을 확인하지 못해 주문을 중단했습니다.',false);return;}
+  envBadgePaint(st);var env=st.env==='real'?'실전투자':'모의투자';
+  if(!confirm(env+(st.dry?' · 주문 미전송':'')+'\n'+(side==='buy'?'매수':'매도')+' '+selected.name+' ('+selected.code+') '+qty+'주를 실행할까요?'))return;
   kisMsg('kisOMsg','주문 중…');
-  const j=await kisFetch('/api/kis/order?side='+side+'&code='+encodeURIComponent(code)+'&qty='+qty);
-  kisMsg('kisOMsg', j.ok?(j.dry?'DRY-RUN: 주문 미전송(설정만 기록)':'주문 접수됨'):(j.msg||'주문 실패'), j.ok);
-  loadKis();
+  var j=await kisFetch('/api/kis/order?side='+side+'&code='+encodeURIComponent(selected.code)+'&qty='+qty+'&expectedEnv='+encodeURIComponent(st.env));
+  kisMsg('kisOMsg',j.ok?(j.dry?'주문 미전송: 증권사에 주문하지 않았습니다.':'주문 접수됨'):(j.msg||'주문 실패'),j.ok);loadKis();
 }
 // 매매 방식 프리셋(방식을 바꾸면 손절·익절·보유 기간을 기본값으로 채움 — 저장 전 수정 가능)
 var KIS_MODE_PRESET={swing:{sl:-3,tp:10,hd:0,sg:'score'},short:{sl:-3,tp:4,hd:3,sg:'trend'},day:{sl:-3,tp:2,hd:0,sg:'trend'},combo:{sl:-3,tp:0,hd:0,sg:'score'}};
