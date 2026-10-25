@@ -695,6 +695,66 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
 .ye-order-results{display:flex;flex-direction:column;gap:6px;grid-column:1/-1;width:100%;min-width:0}.ye-order-results:empty{display:none}.ye-order-results button{text-align:left;white-space:normal;line-height:1.5}
 #kisOrderSelected{grid-column:1/-1;width:100%;line-height:1.6}
 #liveSec .symbar label:has(#kisCode){grid-column:1/-1;width:100%}
+
+.ye-mobile-only,.ye-mobile-heading,.ye-mobile-nav{display:none}
+@media(max-width:760px){
+ #liveSec{padding-bottom:calc(150px + env(safe-area-inset-bottom));scroll-padding-bottom:150px}#liveSec>.panel{scroll-margin-bottom:150px}
+ #liveSec>h2{display:none}#liveSec>.ye-policy{display:none}
+ .ye-mobile-heading{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:12px 0 16px}
+ .ye-mobile-heading small{flex-basis:100%;font-size:11px;color:var(--mute);font-weight:700;letter-spacing:.8px}.ye-mobile-heading h3{font:800 25px/1.3 var(--body);letter-spacing:-.6px}.ye-mobile-heading>span{margin-left:auto;font-size:11px;color:var(--action,var(--ink));max-width:48%;text-align:right}
+ #liveSec>.panel{margin-bottom:12px!important}
+ #liveSec[data-mobile-view]>.panel{display:none}
+ #liveSec[data-mobile-view="today"]>.ye-today-card,#liveSec[data-mobile-view="order"]>.ye-plan-card,#liveSec[data-mobile-view="order"]>.ye-desk-order,#liveSec[data-mobile-view="hold"]>.ye-desk-balance,#liveSec[data-mobile-view="journal"]>.ye-desk-journal,#liveSec[data-mobile-view="settings"]>.ye-desk-connect,#liveSec[data-mobile-view="settings"]>.ye-desk-auto{display:block}
+ .ye-plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px;margin:16px 0}.ye-plan-grid dt{font-size:11px;color:var(--mute);margin-bottom:5px}.ye-plan-grid dd{font-size:14px;font-weight:700;overflow-wrap:anywhere}
+ .ye-plan-card .rec-h>span{font-size:11px;color:var(--mute)}
+ .ye-mobile-actions{display:flex;gap:10px;margin-top:14px}.ye-mobile-actions button{flex:1}
+ #liveSec>.ye-mobile-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative;bottom:auto;left:auto;right:auto;z-index:90;background:var(--card);margin-top:18px;border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));gap:3px;box-shadow:0 -5px 20px rgba(0,0,0,.04)}
+ .ye-mobile-nav button{display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:transparent;color:var(--mute);font:600 11px/1.3 var(--body);padding:6px 1px;min-height:48px;border-radius:10px}
+ .ye-mobile-nav button>span{font:400 22px/1 var(--body)}.ye-mobile-nav button[aria-current="page"]{background:var(--soft,var(--frost));color:var(--action,var(--ink));font-weight:800}
+ #liveSec .ye-desk-balance:has(#kisHold:empty)::after{content:'잔고를 불러오면 보유 종목이 표시됩니다. 설정에서 계좌 연결 후 새로고침하세요.';display:block;font-size:12px;line-height:1.8;color:var(--mute);margin:16px 0}
+}
+
+.mobile-dock{display:none}
+@media(max-width:760px){
+ body{padding-bottom:calc(90px + env(safe-area-inset-bottom))!important}
+ body[data-active-tab="live"]{padding-bottom:calc(150px + env(safe-area-inset-bottom))!important}
+ body>.tabs{position:relative;top:auto}
+ .mobile-dock{display:block;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 18px rgba(0,0,0,.06)}
+ .mobile-main-nav{display:flex;overflow-x:auto;gap:4px;padding:8px 8px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ .mobile-main-nav button{flex:0 0 auto;min-height:44px;padding:9px 13px;border:0;border-radius:10px;background:transparent;color:var(--mute);font:700 12px/1.4 var(--body)}
+ .mobile-main-nav button[aria-current="page"]{background:var(--action,var(--ink));color:var(--card)}
+ #mobileDock>.ye-mobile-nav{display:none;position:static;margin:0;box-shadow:none;border:0;border-bottom:1px solid var(--line);padding:5px 8px;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
+ body[data-active-tab="live"] #mobileDock>.ye-mobile-nav{display:grid}
+ #mobileDock .ye-mobile-nav button{min-height:48px;padding:5px 1px}
+ #liveSec{padding-bottom:12px!important}
+}
+
+/* 노트북: v81 왼쪽 탭 유지 + 현재 탭 내부 항목 바로가기 */
+.desktop-section-nav{display:none}
+@media(min-width:1100px){
+ html{height:100%;overflow:hidden}body{height:calc(100dvh - 120px);overflow-y:auto;box-sizing:border-box;padding-bottom:100px}
+ .desktop-section-nav{display:flex;position:fixed;left:208px;right:0;bottom:0;z-index:120;gap:8px;align-items:center;justify-content:center;overflow-x:auto;background:var(--card);border-top:1px solid var(--line);padding:12px 20px;box-shadow:0 -4px 18px rgba(0,0,0,.04)}
+ .desktop-section-nav b{font:700 12px var(--body);color:var(--mute);white-space:nowrap;margin-right:8px}
+ .desktop-section-nav button{min-height:44px;padding:10px 16px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);font:600 13px var(--body);white-space:nowrap;cursor:pointer}
+ .desktop-section-nav button:hover,.desktop-section-nav button[aria-current="location"]{background:var(--action,var(--ink));color:var(--card);border-color:transparent}
+ [data-desk-anchor]{scroll-margin-top:20px;scroll-margin-bottom:100px}
+}
+
+/* 노트북: 선택한 상위 탭 아래에 하위 항목을 트리로 표시 */
+@media(min-width:1100px){
+ html{height:auto;overflow:auto}body{height:auto;overflow:visible;padding-bottom:40px}
+ #tabs>.desktop-section-nav{position:static;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;inset:auto;padding:3px 0 8px 13px;margin:-2px 0 8px 26px;width:calc(100% - 30px);box-sizing:border-box;gap:2px;border:0;border-left:2px solid var(--mute);box-shadow:none;background:transparent;overflow:visible;flex:0 0 auto}
+ #tabs>.desktop-section-nav>b{display:none}
+ #tabs>.desktop-section-nav button{position:relative;min-height:34px;width:100%;border:0;border-radius:7px;background:transparent;padding:7px 8px;color:var(--mute);font:500 12px/1.5 var(--body);text-align:left;white-space:normal}
+ #tabs>.desktop-section-nav button:before{content:'';position:absolute;left:-13px;top:17px;width:8px;border-top:1px solid var(--line)}
+ #tabs>.desktop-section-nav button:hover,#tabs>.desktop-section-nav button[aria-current="location"]{background:var(--soft,var(--frost));color:var(--action,var(--ink));font-weight:750}
+ #tabs>[data-t][aria-expanded="true"]:after{content:'⌄';float:right}
+}
+
+.desktop-content-heading{display:none}
+@media(min-width:1100px){
+ .desktop-content-heading:not([hidden]){display:block;position:sticky;top:0;z-index:65;margin:0 0 14px;padding:14px 18px;border:1px solid var(--line);border-left:4px solid var(--action,var(--ink));border-radius:10px;background:var(--card);color:var(--ink);box-shadow:0 4px 14px rgba(0,0,0,.04);font:750 19px/1.5 var(--body)}
+}
 </style>
 </head>
 <body>
@@ -707,6 +767,7 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
 </header>
 
 <div class="err" id="err"></div>
+<div id="desktopContentHeading" class="desktop-content-heading" role="status" aria-live="polite" hidden></div>
 <nav class="tabs" id="tabs" role="tablist" aria-label="화면 구분">
   <button type="button" data-t="live">YE 매매</button>
   <button type="button" data-t="over" aria-pressed="true">개요</button>
@@ -1069,9 +1130,12 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
   <details class="market-help"><summary>기준·출처·주의사항</summary><p class="note" style="border:0;margin-top:10px;padding:0">변화 알림 기본 기준: <b>급변</b> = 51주 상관이 지난주보다 ±0.10 이상 바뀜(과거 30주 동안 상위 1% 변화), <b>단기 이탈</b> = 최근 13주 상관이 51주 상관과 ±0.50 이상 다름(상위 5%). 「기준 조절」에서 바꿀 수 있습니다. 13주 상관은 표본이 작아 흔들림이 크므로 "흐름이 바뀌는 중"이라는 신호로만 보세요.<br>한국·대만·미국 장과 24시간 거래되는 코인의 시간 차이를 줄이려고 금요일 종가 기준 주간 수익률을 씁니다. 매주 금요일 미국 장 마감 후(한국시간 토요일 아침) 최근 51주로 다시 계산합니다. 51주 표본에서는 ±0.28 이내 값은 0과 구별하기 어렵습니다.</p></details>
 </section>
 
-<section id="liveSec" data-tab="live">
+<section id="liveSec" data-tab="live" data-mobile-view="order">
   <h2>YE 매매 <span id="kisEnvBadge" class="env-badge env-demo">모의투자 계좌</span> <small id="kisSub">한국투자증권 KIS · PIN 보호 · 기본은 모의투자</small></h2>
 
+<div class="ye-mobile-heading"><small>YE 매매</small><h3 id="yeMobileTitle">주문 입력</h3><span id="yeMobileEnv">계좌 환경 확인 중</span></div>
+<div class="panel ye-mobile-only ye-today-card"><div class="rec-h"><b>오늘의 매매</b></div><p class="ye-help" id="yeTodayState">설정 정보를 불러오면 표시합니다.</p><div class="ye-mobile-actions"><button class="btn" type="button" data-ye-go="order">주문 입력</button><button class="btn" type="button" data-ye-go="hold">보유 확인</button></div></div>
+<div class="panel ye-mobile-only ye-plan-card"><div class="rec-h"><b>주문 전 확인</b><span id="yePlanAccount">계좌 확인 중</span></div><dl class="ye-plan-grid"><div><dt>계좌 환경</dt><dd id="yePlanEnv">--</dd></div><div><dt>주문 전송</dt><dd id="yePlanSend">--</dd></div><div><dt>손절 / 익절</dt><dd id="yePlanExit">--</dd></div><div><dt>보유 기간</dt><dd id="yePlanHold">--</dd></div></dl><p class="ye-help">이 값은 자동매매 설정입니다. 수동 주문에 별도 예약 주문을 생성하지 않습니다.</p></div>
 <div class="ye-policy"><b>보유형 매매</b><span>오전·오후 조건 매매</span><span>장중 상시 손절</span><span>당일 강제청산 없음</span></div>
   <div class="panel ye-desk-connect" style="margin-bottom:10px">
     <div class="rec-h"><b>KIS 연결 설정</b><span id="kisState" class="note" style="border:0;padding:0;margin:0"></span></div>
@@ -1142,6 +1206,8 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
     <div class="kq-res" id="jnLosers"></div>
     <p class="note" style="border:0;margin:10px 0 0;padding:0">매수·매도 1건마다 시각·종목·수량·단가·사유가 기록됩니다. <b>같은 종목이나 같은 섹터를 다시 매매하면 이전 횟수를 함께 남겨</b> 이력으로 추적할 수 있습니다. 매도 시 실현손익은 일지의 평균단가 기준으로 계산합니다. 섹터는 앱이 추적하는 종목은 지정 섹터로, 그 밖의 종목은 미분류로 표시됩니다.</p>
   </div>
+
+
 </section>
 
 <section class="market-view" data-tab="rec">
@@ -1189,6 +1255,8 @@ html:not([data-theme="dark"]) #liveSec .kis-warn{background:#FBF5EC;border-color
 <p class="note">데이터: CNN Business Fear &amp; Greed Index, Alternative.me(비트코인 공포·탐욕), Yahoo Finance(VIX 및 지수·종목·코인 시세). 섹터 평균은 해당 종목 등락률의 단순 평균. 5분마다 서버에서 갱신되며 장중에는 지연될 수 있습니다. 투자 판단의 참고용이며 투자 권유가 아닙니다.<br>
 홈 화면에 추가하면 앱처럼 쓸 수 있습니다 (iPhone: 공유 → 홈 화면에 추가 / Android: 메뉴 → 앱 설치).</p>
 
+<nav id="desktopSectionNav" class="desktop-section-nav" aria-label="현재 탭 안에서 이동"></nav>
+<div id="mobileDock" class="mobile-dock" aria-label="모바일 화면 이동"><nav class="ye-mobile-nav" aria-label="YE 매매 화면"><button type="button" data-ye-go="today"><span aria-hidden="true">◷</span>오늘</button><button type="button" data-ye-go="order" aria-current="page"><span aria-hidden="true">⇄</span>YE 매매</button><button type="button" data-ye-go="hold"><span aria-hidden="true">▤</span>보유</button><button type="button" data-ye-go="journal"><span aria-hidden="true">≡</span>기록</button><button type="button" data-ye-go="settings"><span aria-hidden="true">⚙</span>설정</button></nav><nav class="mobile-main-nav" aria-label="전체 탭"><button type="button" data-mobile-tab="live">YE 매매</button><button type="button" data-mobile-tab="over">개요</button><button type="button" data-mobile-tab="rec">추천·신호</button><button type="button" data-mobile-tab="kr">주식</button><button type="button" data-mobile-tab="coin">코인</button><button type="button" data-mobile-tab="quote">시세·비교</button><button type="button" data-mobile-tab="corr">상관</button></nav></div>
 <script>
 const $=id=>document.getElementById(id);
 const KO={'extreme fear':'극단적 공포','fear':'공포','neutral':'중립','greed':'탐욕','extreme greed':'극단적 탐욕'};
@@ -2344,6 +2412,9 @@ syncGcBtn();
     el.querySelectorAll('[data-t]').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-t')===t?'true':'false'); });
     try{ localStorage.setItem('tab',t); }catch(e){}
     window.__tab=t;
+    if(window.desktopSections)window.desktopSections(t);
+    document.body.dataset.activeTab=t;
+    document.querySelectorAll('[data-mobile-tab]').forEach(function(b){b.setAttribute('aria-current',b.dataset.mobileTab===t?'page':'false');});
     try{ if(typeof onTabShown==='function') onTabShown(t); }catch(e){}
     try{ window.scrollTo(0,0); }catch(e){}
     setTimeout(function(){ try{ if(typeof applyTheme==='function') applyTheme(document.documentElement.dataset.theme||'dark'); }catch(e){}
@@ -2431,7 +2502,23 @@ async function kisLog(){ const j=await kisFetch('/api/kis/log'); if(!j.ok||!$('k
   const rows=(j.log||[]).slice(-20).reverse();
   $('kisLog').innerHTML=rows.map(l=>'<div class="tv-row"><span class="tv-rank">·</span><span><span class="tv-name">'+(l.kind||'')+'</span><span class="tv-sub">'+(l.name?l.name+' ':'')+(l.code||'')+(l.qty?' '+l.qty+'주':'')+(l.msg?' · '+l.msg:'')+(l.note?' · '+l.note:'')+(l.score!=null?' · 점수'+l.score:'')+'</span></span><span class="tv-val">'+String(l.t||'').slice(11,19)+'</span></div>').join('')||'<div class="tv-row"><span class="tv-rank">–</span><span class="tv-name">기록이 없습니다</span><span class="tv-val">--</span></div>';
 }
-function envBadgePaint(st){ var name=st&&st.env==='real'?'실전투자':'모의투자'; if($('kisBalanceTitle'))$('kisBalanceTitle').textContent='계좌 현황 ('+name+')'; if($('kisAutoTitle'))$('kisAutoTitle').textContent='자동매매 ('+name+')'; var real=st&&st.env==='real', txt=real?(st.dry?'실전 계좌 · DRY-RUN(주문 안 나감)':'실전 계좌 · 실제 주문 나감'):'모의투자 계좌 · 실제 주문 안 나감', cls=real?'env-badge env-real':'env-badge env-demo';
+function yeMobileView(view){
+  var root=$('liveSec'),names={today:'오늘의 매매',order:'주문 입력',hold:'보유 현황',journal:'실행 기록',settings:'매매 설정'};
+  if(!root||!names[view])return;root.dataset.mobileView=view;$('yeMobileTitle').textContent=names[view];
+  document.querySelectorAll('.ye-mobile-nav [data-ye-go]').forEach(function(b){if(b.dataset.yeGo===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+  if(window.matchMedia('(max-width:760px)').matches)root.scrollIntoView({block:'start'});
+}
+document.querySelectorAll('[data-mobile-tab]').forEach(function(b){b.addEventListener('click',function(){if(window.setTab)window.setTab(b.dataset.mobileTab);});});
+document.querySelectorAll('[data-ye-go]').forEach(function(b){b.addEventListener('click',function(){yeMobileView(b.dataset.yeGo);});});
+function yeMobileStatus(st){
+  if(!st)return;var name=st.env==='real'?'실전투자':'모의투자',a=st.auto||{};
+  $('yeMobileEnv').textContent=name+' · '+(st.dry?'주문 미전송':'주문 전송 설정');
+  $('yePlanAccount').textContent=st.account||'계좌 미등록';$('yePlanEnv').textContent=name;$('yePlanSend').textContent=st.dry?'미전송':(st.env==='real'&&!st.allowLive?'실전 주문 차단':'전송 설정');
+  $('yePlanExit').textContent=(a.stopLossPct==null?'--':a.stopLossPct+'%')+' / '+(a.takeProfitPct>0?'+'+a.takeProfitPct+'%':'해제');
+  $('yePlanHold').textContent=a.holdDays>0?'최대 '+a.holdDays+'거래일':'제한 없음 · 다음날 보유 가능';
+  $('yeTodayState').textContent=name+' · 자동매매 '+(a.on?'켜짐':'꺼짐')+' · '+(st.dry?'주문 미전송':'주문 전송 설정')+' · 손절 '+(a.stopLossPct==null?'미설정':a.stopLossPct+'%')+' · 장중 상시 손절 '+(a.stopAnytime==1?'켜짐':'꺼짐');
+}
+function envBadgePaint(st){ yeMobileStatus(st); var name=st&&st.env==='real'?'실전투자':'모의투자'; if($('kisBalanceTitle'))$('kisBalanceTitle').textContent='계좌 현황 ('+name+')'; if($('kisAutoTitle'))$('kisAutoTitle').textContent='자동매매 ('+name+')'; var real=st&&st.env==='real', txt=real?(st.dry?'실전 계좌 · DRY-RUN(주문 안 나감)':'실전 계좌 · 실제 주문 나감'):'모의투자 계좌 · 실제 주문 안 나감', cls=real?'env-badge env-real':'env-badge env-demo';
   var b=$('kisEnvBadge'); if(b){ b.className=cls; b.textContent=txt; }
   var a=$('kisAutoEnv'); if(a){ a.className=cls; a.textContent=real?(st.dry?'실전 · DRY-RUN':'실전 계좌'):'모의투자 계좌'; } }
 if($('kisSave'))$('kisSave').onclick=async()=>{
@@ -2852,6 +2939,23 @@ document.addEventListener('click',function(e){ var t=e.target; if(t.id==='ibtRun
   seg('ibtUni',function(b){IBT.uni=+b.dataset.u;})||seg('ibtSLTP',function(b){var a=b.dataset.s.split(',');IBT.sl=+a[0];IBT.tp=+a[1];})||seg('ibtFee',function(b){IBT.fee=+b.dataset.f;}); });
 (function(){ var q=new URLSearchParams(location.search); if(q.get('ibt')){ if(q.get('ibtn')==='200'){ IBT.uni=200; document.querySelectorAll('#ibtUni button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.u==='200');}); } setTimeout(ibtRun,800); } })();
 (function(){ var prev=window.onTabShown; window.onTabShown=function(t){ try{ if(prev) prev(t); }catch(e){} if(t==='kr'&&!KRBT.started) setTimeout(krbtRun,300); if(t==='kr'&&KRBT.data) setTimeout(krbtPaint,50); if(t==='kr'&&IBT.data) setTimeout(ibtPaint,50); if(t==='kr'&&!SBT.started) setTimeout(sbtRun,400); if(t==='kr'&&SBT.data) setTimeout(sbtPaint,50); if(t==='kr'&&!GCBT.started) setTimeout(gcbtRun,500); if(t==='kr'&&GCBT.data) setTimeout(gcbtPaint,60); }; try{ var q=new URLSearchParams(location.search); if(q.get('krh')){ KRBT.hold=+q.get('krh'); document.querySelectorAll('#krbtHold button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.h===q.get('krh'));}); } if(q.get('krn')==='200'){ KRBT.uni=200; document.querySelectorAll('#krbtUni button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.u==='200');}); } var ks=document.getElementById('krbtPanel'); var vis=ks&&ks.closest('section')&&ks.closest('section').style.display!=='none'; if(q.get('krbt')||q.get('tab')==='kr'||vis) setTimeout(function(){ if(!KRBT.started) krbtRun(); },600); }catch(e){} })();
+</script>
+<script>
+(function(){
+ var names={live:'YE 매매',over:'개요',rec:'추천·신호',kr:'주식',coin:'코인',quote:'시세·비교',corr:'상관'};
+ var routes={
+ live:[['연결 설정','.ye-desk-connect'],['계좌 현황','.ye-desk-balance'],['수동 주문','.ye-desk-order'],['자동매매','.ye-desk-auto'],['매매일지','.ye-desk-journal']],
+ over:[['시장 심리','#hero'],['매수 신호','#sig'],['추이','#chart'],['구성 지표','#parts'],['VIX','#vix']],
+ rec:[['관심종목','#favPanel'],['종목 추천','#recList'],['거래대금','#tvSec'],['정확도','#acGrid'],['백테스트','#btTable']],
+ kr:[['시장 지수','#krxMain'],['종목 조회','#kq'],['거래대금','#etfList'],['신호·패턴','#favHit'],['가중치','#krwPanel'],['과거 검증','#krbtPanel']],
+ coin:[['시장 심리','#bval'],['가중치','#cpWv'],['백테스트','#cbtPanel'],['관심 코인','#cpFav'],['순위','#cpVol'],['뉴스','#cpNews']],
+ quote:[['비교 차트','#cmpSec'],['섹터 시세','#qsec'],['종목 관리','#symBar']],
+ corr:[['변화 알림','#calert'],['상관 지도','#hm'],['섹터 비교','#smx'],['종목 쌍','#pTop']]
+ };
+  window.desktopSections=function(t){var heading=document.getElementById('desktopContentHeading');if(heading){heading.hidden=true;heading.textContent='';}var bar=document.getElementById('desktopSectionNav');if(!bar)return;var parent=document.querySelector('#tabs [data-t="'+t+'"]');if(parent){parent.insertAdjacentElement('afterend',bar);document.querySelectorAll('#tabs [data-t]').forEach(function(x){x.setAttribute('aria-expanded',x===parent?'true':'false');});}bar.replaceChildren();var label=document.createElement('b');label.textContent=names[t]||t;bar.appendChild(label);
+ (routes[t]||[]).forEach(function(item){var target=document.querySelector(item[1]);if(!target)return;target.setAttribute('data-desk-anchor','');var b=document.createElement('button');b.type='button';b.textContent=item[0];b.onclick=function(){bar.querySelectorAll('button').forEach(function(x){x.removeAttribute('aria-current');});b.setAttribute('aria-current','location');var heading=document.getElementById('desktopContentHeading');if(heading){heading.textContent=(names[t]||t)+' / '+item[0];heading.hidden=false;}var el=target.closest('.panel')||target.closest('section[data-tab]')||target;var top=el.getBoundingClientRect().top+window.scrollY-82;window.scrollTo({top:Math.max(0,top),behavior:'smooth'});};bar.appendChild(b);});};
+ window.desktopSections(window.__tab||'over');
+})();
 </script>
 </body>
 </html>
